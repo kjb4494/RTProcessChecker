@@ -10,7 +10,9 @@
     1. PyCharm (Python 3.6)
     2. VirusTotal API
     3. Google Safe Browser API
-### 4. 참고 자료
+### 4. 필요 모듈 설치
+    pip install pypiwin32
+### 5. 참고 자료
     1. 리버싱 핵심원리
     2. 점프 투 파이썬
     3. CrowdInspect.exe
