@@ -1,7 +1,12 @@
 import psutil
 import socket
+import hashlib
 from ctypes import *
 from ctypes.wintypes import *
+
+# --------------------------------------------------------------
+# 프로세스의 파일 경로 조회 권한을 가져오기 위한 작업
+# --------------------------------------------------------------
 
 kernel32 = WinDLL('kernel32', use_last_error=True)
 advapi32 = WinDLL('advapi32', use_last_error=True)
@@ -90,10 +95,14 @@ def enable_privilege(privilege):
             kernel32.CloseHandle(hToken)
 
 
+# --------------------------------------------------------------
+
 class ProcessInfo:
     def __init__(self):
+        # 조회된 프로세스 정보를 저장한 딕셔너리
         self.dic_processList = {}
 
+    # 프로그램 시작 직후 프로세스 최초 스캔
     def firstScanning(self):
         procs = psutil.process_iter(attrs=['pid', 'name', 'connections'])
         enable_privilege('SeDebugPrivilege')
@@ -101,35 +110,41 @@ class ProcessInfo:
             procDic = proc.as_dict(attrs=['pid', 'name', 'connections'])
             try:
                 pPath = proc.exe()
+                pHash = self.operFileHash(pPath)
             except:
                 pPath = "AccessDenied"
+                pHash = ""
             pId = procDic['pid']
             pName = procDic['name']
-            self.createProcess(pId)
-            self.setPcName(pId, pName)
-            self.setPcPath(pId, pPath)
-            for pconn in procDic['connections']:
-                if len(pconn.raddr):
-                    (ip, port) = pconn.raddr
-                    if not ip == "127.0.0.1":
-                        try:
-                            dns = socket.gethostbyaddr(ip)[0]
-                        except:
-                            dns = "Unknown"
-                        self.addPcRemoteInfo(pId, port, ip, dns)
+            try:
+                self.createProcess(pId)
+            except:
+                return
+            else:
+                self.setPcName(pId, pName)
+                self.setPcPath(pId, pPath)
+                self.setPcHash(pId, pHash)
+                for pconn in procDic['connections']:
+                    if len(pconn.raddr):
+                        (ip, port) = pconn.raddr
+                        if not ip == "127.0.0.1":
+                            try:
+                                dns = socket.gethostbyaddr(ip)[0]
+                            except:
+                                dns = "Unknown"
+                            self.addPcRemoteInfo(pId, port, ip, dns)
 
+    # 해당 PID를 가진 프로세스의 정보를 담기 위한 딕셔너리 메모리 확보
     def createProcess(self, pId):
-        try:
-            self.dic_processList.update({pId: {'name': '',
-                                               'path': '',
-                                               'inject': '??',
-                                               'vt': '??',
-                                               'wot': '??',
-                                               'rAddIp': [],
-                                               'port': [],
-                                               'dns': []}})
-        except:
-            return
+        self.dic_processList.update({pId: {'name': '',
+                                           'path': '',
+                                           'inject': '??',
+                                           'vt': '??',
+                                           'wot': '??',
+                                           'rAddIp': [],
+                                           'port': [],
+                                           'dns': [],
+                                           'hash': ''}})
 
     def getAllInfo(self):
         return self.dic_processList
@@ -154,5 +169,20 @@ class ProcessInfo:
         self.dic_processList[pid]['rAddIp'].append(pRAddIp)
         self.dic_processList[pid]['dns'].append(pDns)
 
+    def setPcHash(self, pid, pHash):
+        self.dic_processList[pid]['hash'] = pHash
+
     def getPcName(self, pid):
         return self.dic_processList[pid]['name']
+
+    # 파일의 해시를 계산
+    def operFileHash(self, fPath):
+        blocksize = 65536
+        afile = open(fPath, 'rb')
+        hasher = hashlib.md5()
+        buf = afile.read(blocksize)
+        while len(buf) > 0:
+            hasher.update(buf)
+            buf = afile.read(blocksize)
+        afile.close()
+        return hasher.hexdigest()

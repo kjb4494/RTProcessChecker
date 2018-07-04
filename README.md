@@ -12,6 +12,7 @@
     3. Google Safe Browser API
 ### 4. 필요 모듈 설치
     pip install pypiwin32
+    pip install psutil
 ### 5. 참고 자료
     1. 리버싱 핵심원리
     2. 점프 투 파이썬
