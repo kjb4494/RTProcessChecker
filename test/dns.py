@@ -1,11 +1,12 @@
 import psutil
 import socket
+import pprint
 
 rows = []
 lc = psutil.net_connections('inet')
 
-for c in lc:
 
+for c in lc:
     if len(c.raddr):
         (ip, port) = c.raddr
         if not (ip == '127.0.0.1' or ip == '::1'):
@@ -24,4 +25,3 @@ for c in lc:
                 msg = 'PID {} is listening on port {}/{} for IP:{} / DNS:{}.'
                 msg = msg.format(pid_s, port, proto_s, ip, dns[0])
                 print(msg)
-

@@ -1,4 +1,5 @@
 import psutil
+import pprint
 import socket
 from ctypes import *
 from ctypes.wintypes import *
@@ -8,7 +9,6 @@ advapi32 = WinDLL('advapi32', use_last_error=True)
 
 SE_PRIVILEGE_ENABLED = 0x00000002
 TOKEN_ALL_ACCESS = 0x000F0000 | 0x01FF
-
 
 class LUID(Structure):
     _fields_ = (('LowPart', DWORD),
@@ -33,12 +33,10 @@ PHANDLE = POINTER(HANDLE)
 PLUID = POINTER(LUID)
 PTOKEN_PRIVILEGES = POINTER(TOKEN_PRIVILEGES)
 
-
 def errcheck_bool(result, func, args):
     if not result:
         raise WinError(get_last_error())
     return args
-
 
 kernel32.CloseHandle.argtypes = (HANDLE,)
 
@@ -69,7 +67,6 @@ advapi32.AdjustTokenPrivileges.argtypes = (
     PTOKEN_PRIVILEGES,  # _Out_opt_ PreviousState
     PDWORD)  # _Out_opt_ ReturnLength
 
-
 def enable_privilege(privilege):
     hToken = HANDLE()
     luid = LUID()
@@ -89,70 +86,40 @@ def enable_privilege(privilege):
         if hToken:
             kernel32.CloseHandle(hToken)
 
-
-class ProcessInfo:
-    def __init__(self):
-        self.dic_processList = {}
-    def firstScanning(self):
-        procs = psutil.process_iter()
-        enable_privilege('SeDebugPrivilege')
-        for proc in procs:
-            procDic = proc.as_dict()
-            try:
-                pPath = proc.exe()
-            except:
-                pPath = "AccessDenied"
-            pId = procDic['pid']
-            pName = procDic['name']
-            self.createProcess(pId)
-            self.setPcName(pId, pName)
-            self.setPcPath(pId, pPath)
-            for pconn in procDic['connections']:
-                if len(pconn.raddr):
-                    (ip, port) = pconn.raddr
-                    if not ip == "127.0.0.1":
-                        try:
-                            dns = socket.gethostbyaddr(ip)[0]
-                        except:
-                            dns = "Unknown"
-                        self.addPcRemoteInfo(pId, port, ip, dns)
-            print("end")
-
-    def createProcess(self, pId):
+def processInfo():
+    procs = psutil.process_iter()
+    enable_privilege('SeDebugPrivilege')
+    for proc in procs:
         try:
-            self.dic_processList.update({pId: {'name': '',
-                                               'path': '',
-                                               'inject': '',
-                                               'vt': '',
-                                               'wot': '',
-                                               'rAddIp': [],
-                                               'port': [],
-                                               'dns': []}})
+            pPath = proc.exe()
         except:
-            return
+            pPath = "AccessDenied"
+        pId = proc.as_dict()['pid']
+        pName = proc.as_dict()['name']
+        print("pid: {}, pName: {}, pPath: {}".format(proc.as_dict()['pid'], proc.as_dict()['name'], pPath))
+        for pconn in proc.as_dict()['connections']:
+            if len(pconn.raddr):
+                (ip, port) = pconn.raddr
+                if not ip == "127.0.0.1":
+                    try:
+                        dns = socket.gethostbyaddr(ip)[0]
+                    except:
+                        dns = "Unknown"
 
-    def getAllInfo(self):
-        return self.dic_processList
+                    print("\t ip: {}, port: {}, dns: {}".format(ip, port, dns))
 
-    def setPcName(self, pid, pName):
-        self.dic_processList[pid]['name'] = pName
 
-    def setPcPath(self, pid, pPath):
-        self.dic_processList[pid]['path'] = pPath
+def test():
+    procs = psutil.process_iter()
+    for proc in procs:
+        pprint.pprint(proc.as_dict())
+        break
 
-    def setPcInject(self, pid, pInject):
-        self.dic_processList[pid]['inject'] = pInject
 
-    def setPcVt(self, pid, pVt):
-        self.dic_processList[pid]['vt'] = pVt
+def main():
+    # test()
+    processInfo()
 
-    def setPcWot(self, pid, pWot):
-        self.dic_processList[pid]['wot'] = pWot
 
-    def addPcRemoteInfo(self, pid, pPort, pRAddIp, pDns):
-        self.dic_processList[pid]['port'].append(pPort)
-        self.dic_processList[pid]['rAddIp'].append(pRAddIp)
-        self.dic_processList[pid]['dns'].append(pDns)
-
-    def getPcName(self, pid):
-        return self.dic_processList[pid]['name']
+if __name__ == "__main__":
+    main()
