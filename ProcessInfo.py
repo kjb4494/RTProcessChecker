@@ -93,11 +93,12 @@ def enable_privilege(privilege):
 class ProcessInfo:
     def __init__(self):
         self.dic_processList = {}
+
     def firstScanning(self):
-        procs = psutil.process_iter()
+        procs = psutil.process_iter(attrs=['pid', 'name', 'connections'])
         enable_privilege('SeDebugPrivilege')
         for proc in procs:
-            procDic = proc.as_dict()
+            procDic = proc.as_dict(attrs=['pid', 'name', 'connections'])
             try:
                 pPath = proc.exe()
             except:
@@ -116,15 +117,14 @@ class ProcessInfo:
                         except:
                             dns = "Unknown"
                         self.addPcRemoteInfo(pId, port, ip, dns)
-            print("end")
 
     def createProcess(self, pId):
         try:
             self.dic_processList.update({pId: {'name': '',
                                                'path': '',
-                                               'inject': '',
-                                               'vt': '',
-                                               'wot': '',
+                                               'inject': '??',
+                                               'vt': '??',
+                                               'wot': '??',
                                                'rAddIp': [],
                                                'port': [],
                                                'dns': []}})

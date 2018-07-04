@@ -1,11 +1,11 @@
 import ProcessInfo
+import pprint
 
 def main():
     obPInfo = ProcessInfo.ProcessInfo()
     obPInfo.firstScanning()
 
-    for process in obPInfo.dic_processList.values():
-        print(process)
+    pprint.pprint(obPInfo.dic_processList)
 
 
 if __name__ == "__main__":
