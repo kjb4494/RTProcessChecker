@@ -1,5 +1,6 @@
 import requests
 import ProcessInfo
+import pprint
 from time import sleep
 
 
@@ -77,5 +78,6 @@ class OperVt:
                         continue
                     else:
                         ProcessInfo.setPcVt(process, self.getPercentage())  # 온라인 VT의 분석 정보를 딕셔너리에 저장
+                        ProcessInfo.dic_processList[process]['vtInfo'].update(self.getRpResult())
                         print("file: {} - result: {}%".format(pcHash, ProcessInfo.dic_processList[process]['vt']))
                         break

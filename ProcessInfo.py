@@ -141,6 +141,7 @@ class ProcessInfo:
                                            'path': '',
                                            'inject': '??',
                                            'vt': '??',
+                                           'vtInfo': {},
                                            'wot': '??',
                                            'rAddIp': [],
                                            'port': [],
