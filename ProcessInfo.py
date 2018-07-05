@@ -3,6 +3,7 @@ import socket
 import hashlib
 from ctypes import *
 from ctypes.wintypes import *
+import OperVt
 
 # --------------------------------------------------------------
 # 프로세스의 파일 경로 조회 권한을 가져오기 위한 작업
@@ -140,6 +141,7 @@ class ProcessInfo:
                                            'path': '',
                                            'inject': '??',
                                            'vt': '??',
+                                           'vtInfo': {},
                                            'wot': '??',
                                            'rAddIp': [],
                                            'port': [],
@@ -155,11 +157,11 @@ class ProcessInfo:
     def setPcPath(self, pid, pPath):
         self.dic_processList[pid]['path'] = pPath
 
-    def setPcInject(self, pid, pInject):
-        self.dic_processList[pid]['inject'] = pInject
-
     def setPcVt(self, pid, pVt):
         self.dic_processList[pid]['vt'] = pVt
+
+    def setPcInject(self, pid, pInject):
+        self.dic_processList[pid]['inject'] = pInject
 
     def setPcWot(self, pid, pWot):
         self.dic_processList[pid]['wot'] = pWot
