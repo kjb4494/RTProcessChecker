@@ -11,7 +11,7 @@
     2. VirusTotal API
     3. Google Safe Browser API
 ### 4. 필요 모듈 설치
-    pip install pypiwin32
+    pip install requests
     pip install psutil
 ### 5. 참고 자료
     1. 리버싱 핵심원리
