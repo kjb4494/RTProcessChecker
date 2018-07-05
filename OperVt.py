@@ -1,5 +1,6 @@
 import requests
 import ProcessInfo
+from time import sleep
 
 
 class OperVt:
@@ -50,5 +51,31 @@ class OperVt:
     def getRpResult(self):
         return self.dicRpResult
 
+    # 온라인 바이러스 토탈 분석 정보를 받아 프로세스 딕셔너리에 세팅하기
     def setVt(self, ProcessInfo):
         dicProcessList = ProcessInfo.dic_processList
+        keyIndex = 0  # APIKey 테이블의 인덱스
+        for process in dicProcessList:
+            pcHash = dicProcessList[process]['hash']
+            if not pcHash == '':
+                print()
+                retryCount = 0  # Request 성공시 실패횟수 카운터를 초기화
+                while True:
+                    try:
+                        if retryCount == 1:  # 1회 실패시 다음 API키 인덱스로 이동
+                            keyIndex = (keyIndex + 1) % len(self.apiKeyTable)
+                        elif retryCount >= 5:  # 5회 실패시 2초간 슬립
+                            retryCount = 0
+                            print("2sec sleep......")
+                            sleep(2)
+                        self.setApiKey(self.apiKeyTable[keyIndex])
+                        print("try ApiKey: {}".format(self.apiKeyTable[keyIndex]))
+                        self.rpAnalysis(pcHash)  # 온라인 VT에 해시를 던져 분석 정보를 요청
+                    except:
+                        retryCount += 1  # 요청 실패시 실패횟수 카운터
+                        print("keyIndex: {} - retryCount: {}".format(keyIndex, retryCount))
+                        continue
+                    else:
+                        ProcessInfo.setPcVt(process, self.getPercentage())  # 온라인 VT의 분석 정보를 딕셔너리에 저장
+                        print("file: {} - result: {}%".format(pcHash, ProcessInfo.dic_processList[process]['vt']))
+                        break
