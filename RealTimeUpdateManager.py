@@ -21,10 +21,14 @@ def updateRTProcess(Form):
         if newPid in befPcList:
             # 파일 해시값이 달라졌을 경우 해당 프로세스의 vt 분석정보 초기화
             if not newPcList[newPid]['hash'] == befPcList[newPid]['hash']:
-                befPcList['vt'] = '??'
-                befPcList['vtInfo'] = {}
+                befPcList[newPid]['vt'] = '??'
+                befPcList[newPid]['vtInfo'] = {}
             # IP, Port, Dns 정보를 비교하여 wot 분석정보 초기화
-            # 여기에 코드 작성
+            if len(newPcList[newPid]['rAddIp']) or len(befPcList[newPid]['rAddIp']):
+                befPcList[newPid]['rAddIp'] = newPcList[newPid]['rAddIp']
+                befPcList[newPid]['port'] = newPcList[newPid]['port']
+                befPcList[newPid]['dns'] = newPcList[newPid]['dns']
+                befPcList[newPid]['wot'] = newPcList[newPid]['wot']
 
         # pid가 새로 생긴건 갱신
         else:
@@ -41,7 +45,10 @@ def updateRTProcess(Form):
 
 
 def test():
-    print("hello wolrd!")
+    A = [1,2,3,4,5,6]
+    B = [3,4,5,6,7,8,9,0]
+    B = A
+    print(B)
 
 
 if __name__ == "__main__":

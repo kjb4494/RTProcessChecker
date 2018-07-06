@@ -47,6 +47,7 @@ class Form(QWidget):
         self.tw = QTreeWidget(self)
         self.tic_gen = TicGenerator()
         self.count = 0
+        self.cloneDic = {}
 
         # Item 임시 저장 변수
         self.pName = ""
@@ -97,14 +98,18 @@ class Form(QWidget):
             vtThread.daemon = True
             vtThread.start()
 
+        # 리소스 동시참조를 막기 위한 리스트 복사
+        if not self.psFlag:
+            self.cloneDic = self.ProcessInfo.dic_processList.copy()
+
         # 프로세스 정보 갱신
         if not self.psFlag:
             self.psFlag = True
-            psThread = threading.Thread(target=rtum.updateRTProcess, args=(self, ))
+            psThread = threading.Thread(target=rtum.updateRTProcess, args=(self,))
             psThread.daemon = True
             psThread.start()
-            
-        pcList = self.ProcessInfo.dic_processList
+
+        pcList = self.cloneDic
         for pid in pcList:
             data = pcList[pid]
             self.pid = str(pid)
@@ -114,13 +119,13 @@ class Form(QWidget):
             if len(data['rAddIp']):
                 for i in range(len(data['rAddIp'])):
                     self.wot = data['wot'][i]
-                    self.port = data['port'][i]
+                    self.remotePort = str(data['port'][i])
                     self.remoteIp = data['rAddIp'][i]
                     self.dns = data['dns'][i]
                     self.add_tree_root()
             else:
                 self.wot = ""
-                self.port = ""
+                self.remotePort = ""
                 self.remoteIp = ""
                 self.dns = ""
                 self.add_tree_root()

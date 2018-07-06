@@ -9,13 +9,15 @@ class OperWot:
 
     def rqUrlReport(self):
         url = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
-        payload = {'client': {'clientId': self.clientId, 'clientVersion': "0.1"},
-                   'threatInfo': {'threatTypes': ["SOCIAL_ENGINEERING", "MALWARE",
-                                                  "THREAT_TYPE_UNSPECIFIED", "POTENTIALLY_HARMFUL_APPLICATION",
-                                                  "UNWANTED_SOFTWARE"],
-                                  'platformTypes': ["ANY_PLATFORM"],
+        payload = {'client': {'clientId': 'yourcompanyname', 'clientVersion': "1.5.2"},
+                   'threatInfo': {'threatTypes': ["SOCIAL_ENGINEERING", "MALWARE"],
+                                  'platformTypes': ["WINDOWS"],
                                   'threatEntryTypes': ["URL"],
-                                  'threatEntries': [{'url': "https://www.naver.com/"}]}}
+                                  'threatEntries': [{'url': "https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=safsaf"},
+                                                    {"url": "http://www.urltocheck1.org/"},
+                                                    {"url": "http://www.urltocheck2.org/"},
+                                                    {"url": "http://www.urltocheck3.com/"}
+                                                    ]}}
         params = {'key': self.apiKey}
         r = requests.post(url, params=params, json=payload)
         # Print response
