@@ -103,7 +103,11 @@ class ProcessInfo:
         # 조회된 프로세스 정보를 저장한 딕셔너리
         self.dic_processList = {}
 
-    # 프로그램 시작 직후 프로세스 최초 스캔
+    # removeList와 addDic으로 리턴
+    def comparePcList(self):
+        pass
+
+    # 모든 프로세스 스캐닝
     def firstScanning(self):
         procs = psutil.process_iter(attrs=['pid', 'name', 'connections'])
         enable_privilege('SeDebugPrivilege')
@@ -112,9 +116,11 @@ class ProcessInfo:
             try:
                 pPath = proc.exe()
                 pHash = self.operFileHash(pPath)
+                pVt = "??"
             except:
                 pPath = "AccessDenied"
                 pHash = ""
+                pVt = ""
             pId = procDic['pid']
             pName = procDic['name']
             try:
@@ -125,6 +131,7 @@ class ProcessInfo:
                 self.setPcName(pId, pName)
                 self.setPcPath(pId, pPath)
                 self.setPcHash(pId, pHash)
+                self.setPcVt(pId, pVt)
                 for pconn in procDic['connections']:
                     if len(pconn.raddr):
                         (ip, port) = pconn.raddr
@@ -141,8 +148,9 @@ class ProcessInfo:
                                            'path': '',
                                            'inject': '??',
                                            'vt': '??',
+                                           'vtCheck': False,
                                            'vtInfo': {},
-                                           'wot': '??',
+                                           'wot': [],
                                            'rAddIp': [],
                                            'port': [],
                                            'dns': [],
@@ -164,12 +172,13 @@ class ProcessInfo:
         self.dic_processList[pid]['inject'] = pInject
 
     def setPcWot(self, pid, pWot):
-        self.dic_processList[pid]['wot'] = pWot
+        pass
 
     def addPcRemoteInfo(self, pid, pPort, pRAddIp, pDns):
         self.dic_processList[pid]['port'].append(pPort)
         self.dic_processList[pid]['rAddIp'].append(pRAddIp)
         self.dic_processList[pid]['dns'].append(pDns)
+        self.dic_processList[pid]['wot'].append("??")
 
     def setPcHash(self, pid, pHash):
         self.dic_processList[pid]['hash'] = pHash

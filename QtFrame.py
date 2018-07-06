@@ -8,7 +8,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 import time
-import OperVt
+import RealTimeUpdateManager as rtum
 import threading
 
 
@@ -61,6 +61,7 @@ class Form(QWidget):
 
         # 스레드 핸들링을 위한 플래그 변수
         self.vtFlag = False
+        self.psFlag = False
 
     def init_widget(self, ProcessInfo):
         # QTreeView 생성 및 설정
@@ -85,11 +86,6 @@ class Form(QWidget):
         item.setText(7, self.dns)
         return item
 
-    def importVt(self):
-        obOperVt = OperVt.OperVt()
-        obOperVt.setVt(self.ProcessInfo)
-        self.vtFlag = False
-
     def update_view(self):
         self.tw.clear()
         self.count = self.count + 1
@@ -97,9 +93,17 @@ class Form(QWidget):
         # vt를 실시간으로 갱신하는 스레드
         if not self.vtFlag:
             self.vtFlag = True
-            vtThread = threading.Thread(target=self.importVt)
+            vtThread = threading.Thread(target=rtum.importVt, args=(self, ))
             vtThread.daemon = True
             vtThread.start()
+
+        # 프로세스 정보 갱신
+        if not self.psFlag:
+            self.psFlag = True
+            psThread = threading.Thread(target=rtum.updateRTProcess, args=(self, ))
+            psThread.daemon = True
+            psThread.start()
+            
         pcList = self.ProcessInfo.dic_processList
         for pid in pcList:
             data = pcList[pid]
@@ -109,7 +113,7 @@ class Form(QWidget):
             self.vt = data['vt']
             if len(data['rAddIp']):
                 for i in range(len(data['rAddIp'])):
-                    self.wot = data['wot']
+                    self.wot = data['wot'][i]
                     self.port = data['port'][i]
                     self.remoteIp = data['rAddIp'][i]
                     self.dns = data['dns'][i]
