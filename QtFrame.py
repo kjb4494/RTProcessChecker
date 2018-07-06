@@ -1,4 +1,3 @@
-# 코드 테스트를 위한 공간입니다.
 
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QTreeWidget
@@ -9,6 +8,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 import time
+import OperVt
+import threading
 
 
 class TicGenerator(QThread):
@@ -17,7 +18,8 @@ class TicGenerator(QThread):
     """
     # 사용자 정의 시그널 선언
     # 외부에서 사용할때 tic대신 Tic을 이용하여 호출할 수 있다.
-    # Qt의 시그널 및 슬롯 이름은 Camel을 사용하기 때문에 파이썬의 PEP8을 지키면서 작성한다면 name을 반드시 사용
+    # Qt의 시그널 및 슬롯 이름은 Camel을 사용하기 때문에 파이썬의 PEP8을
+    # 지키면서 작성한다면 name을 반드시 사용
     tic = pyqtSignal(name="Tic")
 
     def __init__(self):
@@ -55,23 +57,20 @@ class Form(QWidget):
         self.remotePort = ""
         self.remoteIp = ""
         self.dns = ""
+        self.path = ""
 
-    def init_widget(self, info):
-        # 데이터
-        # obPrInfo = ProcessInfo.ProcessInfo()
-        # obPrInfo.firstScanning()
-        # dicPsList = obPrInfo.dic_processList
-        # for processId in dicPsList:
-        #     if len(dicPsList[processId]['port'])>1:
-        #         print(dicPsList[processId]['port'][0])
+        # 스레드 핸들링을 위한 플래그 변수
+        self.vtFlag = False
 
+    def init_widget(self, ProcessInfo):
         # QTreeView 생성 및 설정
+        self.ProcessInfo = ProcessInfo
         self.tw.setFixedWidth(1000)
         self.tw.setFixedHeight(600)
         self.tw.setColumnCount(8)
         self.tw.setHeaderLabels(["Process Name", "PID", "Inject", "VT", "WOT", "Remote Port", "Remote IP", "DNS"])
         self.tw.setSortingEnabled(True)
-        self.tic_gen.Tic.connect(lambda: self.update_view(info))
+        self.tic_gen.Tic.connect(lambda: self.update_view())
         self.tic_gen.start()
 
     def add_tree_root(self):
@@ -86,17 +85,22 @@ class Form(QWidget):
         item.setText(7, self.dns)
         return item
 
-    # def add_tree_child(self, parent:QTreeWidgetItem, name:str, description:str):
-    #     item = QTreeWidgetItem()
-    #     item.setText(0, name)
-    #     item.setText(1, description)
-    #     parent.addChild(item)
-    #     return item
+    def importVt(self):
+        obOperVt = OperVt.OperVt()
+        obOperVt.setVt(self.ProcessInfo)
+        self.vtFlag = False
 
-    def update_view(self, pcList: dict):
+    def update_view(self):
         self.tw.clear()
         self.count = self.count + 1
         self.setWindowTitle("Progress Checker:{}".format(self.count))
+        # vt를 실시간으로 갱신하는 스레드
+        if not self.vtFlag:
+            self.vtFlag = True
+            vtThread = threading.Thread(target=self.importVt)
+            vtThread.daemon = True
+            vtThread.start()
+        pcList = self.ProcessInfo.dic_processList
         for pid in pcList:
             data = pcList[pid]
             self.pid = str(pid)

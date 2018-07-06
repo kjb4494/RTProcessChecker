@@ -46,7 +46,7 @@ class OperVt:
 
     # 안전도 백분율 리턴
     def getPercentage(self):
-        return int(self.intRpPositives / self.intRpTotal * 100)
+        return str(int(self.intRpPositives / self.intRpTotal * 100)) + "%"
 
     # 각 백신별 결과 리포트를 정리하여 딕셔너리로 리턴
     def getRpResult(self):

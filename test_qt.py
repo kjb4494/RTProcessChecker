@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# 예제 내용
-# * QTreeWidget을 사용하여 아이템을 표시
 
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QTreeWidget
@@ -14,8 +9,6 @@ from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 import time
 
-global count
-count = 0
 
 class TicGenerator(QThread):
     """
@@ -41,6 +34,7 @@ class TicGenerator(QThread):
             self.Tic.emit()
             self.msleep(1000)
 
+
 class Form(QWidget):
     def __init__(self):
         QWidget.__init__(self, flags=Qt.Widget)
@@ -49,84 +43,75 @@ class Form(QWidget):
         self.setFixedHeight(600)
         self.tw = QTreeWidget(self)
         self.tic_gen = TicGenerator()
+        self.count = 0
 
-
+        # Item 임시 저장 변수
+        self.pName = ""
+        self.pid = ""
+        self.inject = ""
+        self.vt = ""
+        self.wot = ""
+        self.remotePort = ""
+        self.remoteIp = ""
+        self.dns = ""
 
     def init_widget(self, info):
         # 데이터
-#        obPrInfo = ProcessInfo.ProcessInfo()
-#        obPrInfo.firstScanning()
-#        dicPsList = obPrInfo.dic_processList
-#       for processId in dicPsList:
-#            if len(dicPsList[processId]['port'])>1:
-#                print(dicPsList[processId]['port'][0])
-
+        # obPrInfo = ProcessInfo.ProcessInfo()
+        # obPrInfo.firstScanning()
+        # dicPsList = obPrInfo.dic_processList
+        # for processId in dicPsList:
+        #     if len(dicPsList[processId]['port'])>1:
+        #         print(dicPsList[processId]['port'][0])
 
         # QTreeView 생성 및 설정
-
         self.tw.setFixedWidth(1000)
         self.tw.setFixedHeight(600)
         self.tw.setColumnCount(8)
         self.tw.setHeaderLabels(["Process Name", "PID", "Inject", "VT", "WOT", "Remote Port", "Remote IP", "DNS"])
-        self.tw.setSortingEnabled(1)
-        #self.update_view(info)
-
-        self.tic_gen.Tic.connect(lambda : self.update_view(info))
+        self.tw.setSortingEnabled(True)
+        self.tic_gen.Tic.connect(lambda: self.update_view(info))
         self.tic_gen.start()
 
-    def add_tree_root(self, Process_Name:str, PID:int, Inject:str, VT: str, WOT:str, Remote_Port:str, Remote_IP:str, DNS:str):
+    def add_tree_root(self):
         item = QTreeWidgetItem(self.tw)
-        item.setText(0, Process_Name)
-        item.setText(1, str(PID))
-        item.setText(2, Inject)
-        item.setText(3, VT)
-        item.setText(4, WOT)
-        item.setText(5, str(Remote_Port))
-        item.setText(6, str(Remote_IP))
-        item.setText(7, str(DNS))
+        item.setText(0, self.pName)
+        item.setText(1, self.pid)
+        item.setText(2, self.inject)
+        item.setText(3, self.vt)
+        item.setText(4, self.wot)
+        item.setText(5, self.remotePort)
+        item.setText(6, self.remoteIp)
+        item.setText(7, self.dns)
         return item
 
-    def add_tree_child(self, parent:QTreeWidgetItem, name:str, description:str):
-  #      item = QTreeWidgetItem()
-  #      item.setText(0, name)
-  #      item.setText(1, description)
-  #     parent.addChild(item)
-  #      return item
-        return
+    # def add_tree_child(self, parent:QTreeWidgetItem, name:str, description:str):
+    #     item = QTreeWidgetItem()
+    #     item.setText(0, name)
+    #     item.setText(1, description)
+    #     parent.addChild(item)
+    #     return item
 
-    def update_view(self, data:dict):
+    def update_view(self, pcList: dict):
         self.tw.clear()
-        global count
-        count= count+1
-        self.setWindowTitle("Progress Checker:{}".format(count))
-        for processId in data:
-            num = len(data[processId]['port'])
-            #print(data[processId]['port'])
-            if num > 1:
-                for i in range(0, num):
-                    self.add_tree_root(data[processId]['name'],
-                                       processId,
-                                       data[processId]['inject'],
-                                       data[processId]['vt'],
-                                       data[processId]['wot'],
-                                       data[processId]['port'][i],
-                                       data[processId]['rAddIp'][i],
-                                       data[processId]['dns'][i])
-            else :
-                self.add_tree_root(data[processId]['name'],
-                                   processId,
-                                   data[processId]['inject'],
-                                   data[processId]['vt'],
-                                   data[processId]['wot'],
-                                   data[processId]['port'],
-                                   data[processId]['rAddIp'],
-                                   data[processId]['dns'])
-
-
-
-#if __name__ == "__main__":
-#    import sys
-#    app = QApplication(sys.argv)
-#    form = Form()
-#    form.show()
-#    exit(app.exec_())
+        self.count = self.count + 1
+        self.setWindowTitle("Progress Checker:{}".format(self.count))
+        for pid in pcList:
+            data = pcList[pid]
+            self.pid = str(pid)
+            self.pName = data['name']
+            self.inject = data['inject']
+            self.vt = data['vt']
+            if len(data['rAddIp']):
+                for i in range(len(data['rAddIp'])):
+                    self.wot = data['wot']
+                    self.port = data['port'][i]
+                    self.remoteIp = data['rAddIp'][i]
+                    self.dns = data['dns'][i]
+                    self.add_tree_root()
+            else:
+                self.wot = ""
+                self.port = ""
+                self.remoteIp = ""
+                self.dns = ""
+                self.add_tree_root()
