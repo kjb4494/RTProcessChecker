@@ -108,10 +108,9 @@ class ProcessInfo:
 
     # 모든 프로세스 스캐닝
     def firstScanning(self):
-        procs = psutil.process_iter(attrs=['pid', 'name', 'connections'])
+        procs = psutil.process_iter()
         enable_privilege('SeDebugPrivilege')
         for proc in procs:
-            procDic = proc.as_dict(attrs=['pid', 'name', 'connections'])
             try:
                 pPath = proc.exe()
                 pHash = self.operFileHash(pPath)
@@ -120,8 +119,8 @@ class ProcessInfo:
                 pPath = "AccessDenied"
                 pHash = ""
                 pVt = ""
-            pId = procDic['pid']
-            pName = procDic['name']
+            pId = proc.pid
+            pName = proc.name()
             try:
                 self.createProcess(pId)
             except:
@@ -131,7 +130,7 @@ class ProcessInfo:
                 self.setPcPath(pId, pPath)
                 self.setPcHash(pId, pHash)
                 self.setPcVt(pId, pVt)
-                for pconn in procDic['connections']:
+                for pconn in proc.connections('inet4'):
                     if len(pconn.raddr):
                         (ip, port) = pconn.raddr
                         if not ip == "127.0.0.1":

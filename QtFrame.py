@@ -31,11 +31,11 @@ class TicGenerator(QThread):
     def run(self):
         while True:
             t = int(time.time())
-            if not t % 5 == 0:
+            if not t % 2 == 0:
                 self.usleep(1)
                 continue
             self.Tic.emit()
-            self.msleep(1000)
+            self.msleep(300)
 
 
 class Form(QWidget):
