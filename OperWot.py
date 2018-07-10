@@ -1,5 +1,4 @@
 import requests
-import pprint
 
 
 class OperWot:
@@ -18,13 +17,3 @@ class OperWot:
         r = requests.post(url, params=params, json=payload)
         # return response
         return len(r.json())
-
-
-def test():
-    obOperWot = OperWot()
-    if obOperWot.isMalwareUrl("http://malware.testing.google.test/testing/malware/"):
-        pprint.pprint("멀웨어당!")
-
-
-if __name__ == '__main__':
-    test()

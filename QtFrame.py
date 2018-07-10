@@ -35,7 +35,7 @@ class TicGenerator(QThread):
                 self.usleep(1)
                 continue
             self.Tic.emit()
-            self.msleep(300)
+            self.msleep(200)
 
 
 class Form(QWidget):
@@ -71,7 +71,7 @@ class Form(QWidget):
         self.tw.setFixedWidth(1000)
         self.tw.setFixedHeight(600)
         self.tw.setColumnCount(8)
-        self.tw.setHeaderLabels(["Process Name", "PID", "Inject", "VT", "WOT", "Remote Port", "Remote IP", "DNS"])
+        self.tw.setHeaderLabels(["Process Name", "PID", "Inject", "VT", "GSB", "Remote Port", "Remote IP", "DNS"])
         self.tw.setSortingEnabled(True)
         self.tic_gen.Tic.connect(lambda: self.update_view())
         self.tic_gen.start()
