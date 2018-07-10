@@ -1,5 +1,6 @@
 import OperVt
 import ProcessInfo
+import OperWot
 
 
 def importVt(Form):
@@ -11,9 +12,9 @@ def importVt(Form):
 
 # 프로세스 정보를 최신으로 갱신
 def updateRTProcess(Form):
-    obPcInfo = ProcessInfo.ProcessInfo()
-    obPcInfo.firstScanning()
     befPcList = Form.ProcessInfo.dic_processList
+    obPcInfo = ProcessInfo.ProcessInfo()
+    obPcInfo.RTScanning(Form.ProcessInfo.gsbDataBase)
     newPcList = obPcInfo.dic_processList
     delPidList = []
     for newPid in newPcList:
@@ -23,12 +24,9 @@ def updateRTProcess(Form):
             if not newPcList[newPid]['hash'] == befPcList[newPid]['hash']:
                 befPcList[newPid]['vt'] = '??'
                 befPcList[newPid]['vtInfo'] = {}
-            # IP, Port, Dns 정보를 비교하여 wot 분석정보 초기화
-            if len(newPcList[newPid]['rAddIp']) or len(befPcList[newPid]['rAddIp']):
-                befPcList[newPid]['rAddIp'] = newPcList[newPid]['rAddIp']
-                befPcList[newPid]['port'] = newPcList[newPid]['port']
-                befPcList[newPid]['dns'] = newPcList[newPid]['dns']
-                befPcList[newPid]['wot'] = newPcList[newPid]['wot']
+            # IP, Port, Dns 정보를 비교하여 gsb 분석정보 초기화
+            if len(newPcList[newPid]['remote']) or len(befPcList[newPid]['remote']):
+                befPcList[newPid]['remote'] = newPcList[newPid]['remote']
 
         # pid가 새로 생긴건 갱신
         else:
@@ -44,11 +42,31 @@ def updateRTProcess(Form):
     Form.psFlag = False
 
 
+def updateGsb(Form):
+    obOperWot = OperWot.OperWot()
+    try:
+        for dns, value in Form.ProcessInfo.gsbDataBase.items():
+            if value != '-1':
+                continue
+            if obOperWot.isMalwareUrl(dns):
+                Form.ProcessInfo.gsbDataBase[dns] = '1'
+            else:
+                Form.ProcessInfo.gsbDataBase[dns] = '0'
+    except Exception as e:
+        print(e)
+        return
+    finally:
+        del obOperWot
+        Form.gsbFlag = False
+
+
 def test():
-    A = [1,2,3,4,5,6]
-    B = [3,4,5,6,7,8,9,0]
-    B = A
-    print(B)
+    dicA = {'1': '111',
+            '2': '222',
+            '3': '333'}
+    for key, value in dicA.items():
+        value = 111
+        print("{}: {}".format(key, value))
 
 
 if __name__ == "__main__":

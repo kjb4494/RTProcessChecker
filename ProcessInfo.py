@@ -101,12 +101,14 @@ class ProcessInfo:
     def __init__(self):
         # 조회된 프로세스 정보를 저장한 딕셔너리
         self.dic_processList = {}
+        '''
+        분석이 완료된 dns에 대해 malware 여부를 저장하는 딕셔너리
+        각 도메인은 도메인명을 키값으로 '[dnsName]': '0' or '[dnsName]': '1' or '[dnsName]': '-1' 형식의 딕셔너리로 저장된다.
+        0이면 clearSite, 1이면 malwareSite, -1이면 분석이 필요한 상태
+        '''
+        self.gsbDataBase = {}
 
-    # removeList와 addDic으로 리턴
-    def comparePcList(self):
-        pass
-
-    # 모든 프로세스 스캐닝
+    # 모든 프로세스 최초 스캐닝
     def firstScanning(self):
         procs = psutil.process_iter()
         enable_privilege('SeDebugPrivilege')
@@ -138,7 +140,67 @@ class ProcessInfo:
                                 dns = socket.gethostbyaddr(ip)[0]
                             except:
                                 dns = "Unknown"
-                            self.addPcRemoteInfo(pId, port, ip, dns)
+                                gsb = "-"
+                            else:
+                                if dns not in self.gsbDataBase:
+                                    self.gsbDataBase.update({dns: '-1'})
+                                    gsb = "??"
+                                else:
+                                    if self.gsbDataBase[dns] == '1':
+                                        gsb = "malware"
+                                    elif self.gsbDataBase[dns] == '0':
+                                        gsb = "safe"
+                                    else:
+                                        gsb = "??"
+                            self.addPcRemoteInfo(pId, port, ip, dns, gsb)
+    '''
+    모든 프로세스 스캐닝. FirstScanning과 다르게
+    최초 ProcessInfo 객체의 gsbDatabase를 매개변수로 둔다.
+    '''
+    def RTScanning(self, gsbDatabase):
+        procs = psutil.process_iter()
+        enable_privilege('SeDebugPrivilege')
+        for proc in procs:
+            try:
+                pPath = proc.exe()
+                pHash = self.operFileHash(pPath)
+                pVt = "??"
+            except:
+                pPath = "AccessDenied"
+                pHash = ""
+                pVt = ""
+            pId = proc.pid
+            pName = proc.name()
+            try:
+                self.createProcess(pId)
+            except:
+                return
+            else:
+                self.setPcName(pId, pName)
+                self.setPcPath(pId, pPath)
+                self.setPcHash(pId, pHash)
+                self.setPcVt(pId, pVt)
+                for pconn in proc.connections('inet4'):
+                    if len(pconn.raddr):
+                        (ip, port) = pconn.raddr
+                        if not ip == "127.0.0.1":
+                            try:
+                                dns = socket.gethostbyaddr(ip)[0]
+                            except:
+                                dns = "Unknown"
+                                gsb = "-"
+                            else:
+                                if dns not in gsbDatabase:
+                                    gsbDatabase.update({dns: '-1'})
+                                    gsb = "??"
+                                else:
+                                    if gsbDatabase[dns] == '1':
+                                        gsb = "malware"
+                                    elif gsbDatabase[dns] == '0':
+                                        gsb = "safe"
+                                    else:
+                                        gsb = "??"
+                            self.addPcRemoteInfo(pId, port, ip, dns, gsb)
 
     # 해당 PID를 가진 프로세스의 정보를 담기 위한 딕셔너리 메모리 확보
     def createProcess(self, pId):
@@ -147,10 +209,7 @@ class ProcessInfo:
                                            'inject': '??',
                                            'vt': '',
                                            'vtInfo': {},
-                                           'wot': [],
-                                           'rAddIp': [],
-                                           'port': [],
-                                           'dns': [],
+                                           'remote': [],
                                            'hash': ''}})
 
     def getAllInfo(self):
@@ -171,11 +230,8 @@ class ProcessInfo:
     def setPcWot(self, pid, pWot):
         pass
 
-    def addPcRemoteInfo(self, pid, pPort, pRAddIp, pDns):
-        self.dic_processList[pid]['port'].append(pPort)
-        self.dic_processList[pid]['rAddIp'].append(pRAddIp)
-        self.dic_processList[pid]['dns'].append(pDns)
-        self.dic_processList[pid]['wot'].append("??")
+    def addPcRemoteInfo(self, pid, pPort, pRAddIp, pDns, pGsb):
+        self.dic_processList[pid]['remote'].append({'ip': pRAddIp, 'port': pPort, 'dns': pDns, 'gsb': pGsb})
 
     def setPcHash(self, pid, pHash):
         self.dic_processList[pid]['hash'] = pHash

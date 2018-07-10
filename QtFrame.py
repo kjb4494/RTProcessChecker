@@ -63,6 +63,7 @@ class Form(QWidget):
         # 스레드 핸들링을 위한 플래그 변수
         self.vtFlag = False
         self.psFlag = False
+        self.gsbFlag = False
 
     def init_widget(self, ProcessInfo):
         # QTreeView 생성 및 설정
@@ -98,6 +99,13 @@ class Form(QWidget):
             vtThread.daemon = True
             vtThread.start()
 
+        # malware 실시간으로 검사하여 딕셔너리를 갱시하는 스레드
+        if not self.gsbFlag:
+            self.gsbFlag = True
+            gsbThread = threading.Thread(target=rtum.updateGsb, args=(self,))
+            gsbThread.daemon = True
+            gsbThread.start()
+
         # 리소스 동시참조를 막기 위한 리스트 복사
         if not self.psFlag:
             self.cloneDic = self.ProcessInfo.dic_processList.copy()
@@ -116,12 +124,13 @@ class Form(QWidget):
             self.pName = data['name']
             self.inject = data['inject']
             self.vt = data['vt']
-            if len(data['rAddIp']):
-                for i in range(len(data['rAddIp'])):
-                    self.wot = data['wot'][i]
-                    self.remotePort = str(data['port'][i])
-                    self.remoteIp = data['rAddIp'][i]
-                    self.dns = data['dns'][i]
+            remoteData = data['remote']
+            if len(remoteData):
+                for i in range(len(remoteData)):
+                    self.wot = remoteData[i]['gsb']
+                    self.remotePort = str(remoteData[i]['port'])
+                    self.remoteIp = remoteData[i]['ip']
+                    self.dns = remoteData[i]['dns']
                     self.add_tree_root()
             else:
                 self.wot = ""
