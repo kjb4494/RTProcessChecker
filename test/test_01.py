@@ -12,16 +12,10 @@ def test():
             print("{}: {}\t{}".format(proc.pid, proc.name(), proc.exe()))
         except:
             print("{}: {}\tAcessDenied".format(proc.pid, proc.name()))
-        for pconn in proc.connections('inet4'):
-            if len(pconn.raddr):
-                (ip, port) = pconn.raddr
-                if not ip == "127.0.0.1":
-                    try:
-                        dns = socket.gethostbyaddr(ip)
-                    except:
-                        dns = "Unknown"
-                    print("\t{}:{}\t{}".format(ip, port, dns[0]))
-
+        else:
+            p = psutil.Process(proc.pid)
+            for dll in p.memory_maps():
+                print("\t{}".format(dll.path))
 
 
 if __name__ == "__main__":
