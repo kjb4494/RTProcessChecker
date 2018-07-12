@@ -14,7 +14,14 @@ def importVt(Form):
 def updateRTProcess(Form):
     befPcList = Form.ProcessInfo.dic_processList
     obPcInfo = ProcessInfo.ProcessInfo()
-    obPcInfo.RTScanning(Form.ProcessInfo.gsbDataBase)
+    while True:
+        try:
+            obPcInfo.RTScanning(Form.ProcessInfo)
+        except Exception as e:
+            print("error!! --> {}".format(e))
+            continue
+        else:
+            break
     newPcList = obPcInfo.dic_processList
     delPidList = []
     for newPid in newPcList:
@@ -58,16 +65,3 @@ def updateGsb(Form):
     finally:
         del obOperWot
         Form.gsbFlag = False
-
-
-def test():
-    dicA = {'1': '111',
-            '2': '222',
-            '3': '333'}
-    for key, value in dicA.items():
-        value = 111
-        print("{}: {}".format(key, value))
-
-
-if __name__ == "__main__":
-    test()

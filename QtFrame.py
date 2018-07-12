@@ -35,7 +35,7 @@ class TicGenerator(QThread):
                 self.usleep(1)
                 continue
             self.Tic.emit()
-            self.msleep(200)
+            self.msleep(500)
 
 
 class Form(QWidget):
@@ -46,7 +46,7 @@ class Form(QWidget):
         self.setFixedHeight(600)
         self.tw = QTreeWidget(self)
         self.tic_gen = TicGenerator()
-        self.count = 0
+        # self.count = 0
         self.cloneDic = {}
 
         # Item 임시 저장 변수
@@ -90,8 +90,8 @@ class Form(QWidget):
 
     def update_view(self):
         self.tw.clear()
-        self.count = self.count + 1
-        self.setWindowTitle("Progress Checker:{}".format(self.count))
+        # self.count = self.count + 1
+        # self.setWindowTitle("Progress Checker:{}".format(self.count))
         # vt를 실시간으로 갱신하는 스레드
         if not self.vtFlag:
             self.vtFlag = True

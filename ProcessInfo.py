@@ -107,6 +107,39 @@ class ProcessInfo:
         0이면 clearSite, 1이면 malwareSite, -1이면 분석이 필요한 상태
         '''
         self.gsbDataBase = {}
+        '''
+        DNS 정보를 검색하는데서 많은 시간을 소모한다.
+        따라서 DNS 캐시테이블을 만들어 프로세스 검색 속도를 향상시킨다.
+        key는 ip, value는 dns 정보가 저장된다.
+        '''
+        self.dnsCachTable = {}
+        # 세팅을 위한 임시 저장 매개변수
+        self.dns = ""
+        self.gsb = ""
+
+    def setGsb(self):
+        if self.dns not in self.gsbDataBase:
+            self.gsbDataBase.update({self.dns: '-1'})
+            self.gsb = "??"
+        else:
+            if self.gsbDataBase[self.dns] == '1':
+                self.gsb = "malware"
+            elif self.gsbDataBase[self.dns] == '0':
+                self.gsb = "safe"
+            else:
+                self.gsb = "??"
+
+    def setRefGsb(self, ProcessInfo):
+        if self.dns not in ProcessInfo.gsbDataBase:
+            ProcessInfo.gsbDataBase.update({self.dns: '-1'})
+            self.gsb = "??"
+        else:
+            if ProcessInfo.gsbDataBase[self.dns] == '1':
+                self.gsb = "malware"
+            elif ProcessInfo.gsbDataBase[self.dns] == '0':
+                self.gsb = "safe"
+            else:
+                self.gsb = "??"
 
     # 모든 프로세스 최초 스캐닝
     def firstScanning(self):
@@ -136,28 +169,25 @@ class ProcessInfo:
                     if len(pconn.raddr):
                         (ip, port) = pconn.raddr
                         if not ip == "127.0.0.1":
-                            try:
-                                dns = socket.gethostbyaddr(ip)[0]
-                            except:
-                                dns = "Unknown"
-                                gsb = "-"
-                            else:
-                                if dns not in self.gsbDataBase:
-                                    self.gsbDataBase.update({dns: '-1'})
-                                    gsb = "??"
+                            if ip not in self.dnsCachTable:
+                                try:
+                                    self.dns = socket.gethostbyaddr(ip)[0]
+                                except:
+                                    self.dns = "Unknown"
+                                    self.dnsCachTable[ip] = self.dns
+                                    self.gsb = "-"
                                 else:
-                                    if self.gsbDataBase[dns] == '1':
-                                        gsb = "malware"
-                                    elif self.gsbDataBase[dns] == '0':
-                                        gsb = "safe"
-                                    else:
-                                        gsb = "??"
-                            self.addPcRemoteInfo(pId, port, ip, dns, gsb)
+                                    self.dnsCachTable[ip] = self.dns
+                                    self.setGsb()
+                            else:
+                                self.dns = self.dnsCachTable[ip]
+                                self.setGsb()
+                            self.addPcRemoteInfo(pId, port, ip)
     '''
     모든 프로세스 스캐닝. FirstScanning과 다르게
     최초 ProcessInfo 객체의 gsbDatabase를 매개변수로 둔다.
     '''
-    def RTScanning(self, gsbDatabase):
+    def RTScanning(self, ProcessInfo):
         procs = psutil.process_iter()
         enable_privilege('SeDebugPrivilege')
         for proc in procs:
@@ -184,23 +214,20 @@ class ProcessInfo:
                     if len(pconn.raddr):
                         (ip, port) = pconn.raddr
                         if not ip == "127.0.0.1":
-                            try:
-                                dns = socket.gethostbyaddr(ip)[0]
-                            except:
-                                dns = "Unknown"
-                                gsb = "-"
-                            else:
-                                if dns not in gsbDatabase:
-                                    gsbDatabase.update({dns: '-1'})
-                                    gsb = "??"
+                            if ip not in ProcessInfo.dnsCachTable:
+                                try:
+                                    self.dns = socket.gethostbyaddr(ip)[0]
+                                except:
+                                    self.dns = "Unknown"
+                                    ProcessInfo.dnsCachTable[ip] = self.dns
+                                    self.gsb = "-"
                                 else:
-                                    if gsbDatabase[dns] == '1':
-                                        gsb = "malware"
-                                    elif gsbDatabase[dns] == '0':
-                                        gsb = "safe"
-                                    else:
-                                        gsb = "??"
-                            self.addPcRemoteInfo(pId, port, ip, dns, gsb)
+                                    ProcessInfo.dnsCachTable[ip] = self.dns
+                                    self.setRefGsb(ProcessInfo)
+                            else:
+                                self.dns = ProcessInfo.dnsCachTable[ip]
+                                self.setRefGsb(ProcessInfo)
+                            self.addPcRemoteInfo(pId, port, ip)
 
     # 해당 PID를 가진 프로세스의 정보를 담기 위한 딕셔너리 메모리 확보
     def createProcess(self, pId):
@@ -230,8 +257,8 @@ class ProcessInfo:
     def setPcWot(self, pid, pWot):
         pass
 
-    def addPcRemoteInfo(self, pid, pPort, pRAddIp, pDns, pGsb):
-        self.dic_processList[pid]['remote'].append({'ip': pRAddIp, 'port': pPort, 'dns': pDns, 'gsb': pGsb})
+    def addPcRemoteInfo(self, pid, pPort, pRAddIp):
+        self.dic_processList[pid]['remote'].append({'ip': pRAddIp, 'port': pPort, 'dns': self.dns, 'gsb': self.gsb})
 
     def setPcHash(self, pid, pHash):
         self.dic_processList[pid]['hash'] = pHash
