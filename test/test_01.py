@@ -2,11 +2,12 @@
 
 import psutil
 import socket
+import OperInject
 
 
 def test():
-    print("hello Wolrd!")
     procs = psutil.process_iter()
+    obOperInject = OperInject.OperInject()
     for proc in procs:
         try:
             print("{}: {}\t{}".format(proc.pid, proc.name(), proc.exe()))
@@ -15,7 +16,10 @@ def test():
         else:
             p = psutil.Process(proc.pid)
             for dll in p.memory_maps():
-                print("\t{}".format(dll.path))
+                try:
+                    print("\t{}: {}".format(dll.path, obOperInject.sys32HashTable[dll.path]))
+                except:
+                    print("\t[Error]\t{}".format(dll.path))
 
 
 if __name__ == "__main__":
