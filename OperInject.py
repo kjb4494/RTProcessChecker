@@ -87,7 +87,7 @@ class OperInject:
                             continue
                         # 인젝션된 시스템 파일
                         else:
-                            return 100
+                            return "INJECTED!"
                     # 응용프로그램의 DLL 파일일 경우
                     else:
                         if dll.path in self.initDllHashTable[pid]:
@@ -96,14 +96,14 @@ class OperInject:
                                 continue
                             # 인젝션 DLL
                             else:
-                                return 100
+                                return "INJECTED!"
                         # 초기값과 다른 의심 파일이 있음
                         else:
                             print("{}: {}".format(pid, dll.path))
-                            return 50
+                            return "INJECTION DETECTED!"
             except:
                 continue
-        return 0
+        return "OK"
 
 
 def test():

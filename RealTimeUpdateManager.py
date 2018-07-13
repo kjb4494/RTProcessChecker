@@ -39,8 +39,7 @@ def updateRTProcess(Form):
             # inject 여부 검사
             try:
                 injectCheck = Form.OperInject.isInjected(newPid)
-                if type(injectCheck) == int:
-                    Form.ProcessInfo.dic_processList[newPid]['inject'] = str(Form.OperInject.isInjected(newPid))
+                Form.ProcessInfo.dic_processList[newPid]['inject'] = str(Form.OperInject.isInjected(newPid))
             # AccessDenied pid --> pass
             except:
                 pass
