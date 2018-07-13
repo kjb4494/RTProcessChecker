@@ -73,22 +73,24 @@ class OperInject:
                 if dll.path[-3:].lower() == 'dll':
                     # 시스템 파일일 경우
                     # 시스템 해시 테이블에 존재하지않으면 except로 넘어간다.
-                    if dll.path in self.operFileHash:
+                    if dll.path in self.sys32HashTable:
+                        # 정상 시스템 파일
                         if self.sys32HashTable[dll.path] == self.operFileHash(dll.path):
-                            print("정상 시스템 파일임")
                             continue
+                        # 인젝션된 시스템 파일
                         else:
-                            print("인젝션된 파일임!")
                             return 100
+                    # 응용프로그램의 DLL 파일일 경우
                     else:
                         if dll.path in self.initDllHashTable[pid]:
+                            # 정상 DLL
                             if self.initDllHashTable[pid][dll.path] == self.operFileHash(dll.path):
-                                print("정상 DLL 파일임")
+                                continue
+                            # 인젝션 DLL
                             else:
-                                print("인젝션된 파일임!")
                                 return 100
+                        # 초기값과 다른 의심 파일이 있음
                         else:
-                            print("인젝션 가능성이 있음")
                             return 50
             except:
                 continue

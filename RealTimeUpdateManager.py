@@ -38,9 +38,12 @@ def updateRTProcess(Form):
                 befPcList[newPid]['remote'] = newPcList[newPid]['remote']
             # inject 여부 검사
             try:
-                Form.ProcessInfo.dic_processList[newPid]['inject'] = str(Form.OperInject.isInjected(newPid))
-            except Exception as e:
-                print("zz --> {}".format(e))
+                injectCheck = Form.OperInject.isInjected(newPid)
+                if type(injectCheck) == int:
+                    Form.ProcessInfo.dic_processList[newPid]['inject'] = str(Form.OperInject.isInjected(newPid))
+            # AccessDenied pid --> pass
+            except:
+                pass
 
         # pid가 새로 생긴건 갱신
         else:
