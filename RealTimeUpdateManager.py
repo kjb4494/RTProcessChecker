@@ -1,6 +1,8 @@
 import OperVt
 import ProcessInfo
 import OperWot
+import OperInject
+import time
 
 
 def importVt(Form):
@@ -65,3 +67,8 @@ def updateGsb(Form):
     finally:
         del obOperWot
         Form.gsbFlag = False
+
+def injectCheck(Form):
+    print("injectCheck 작동중")
+    time.sleep(5)
+    Form.injectFlag = False

@@ -3,9 +3,11 @@
 import psutil
 import socket
 import OperInject
+import ProcessInfo
 
 
 def test():
+    ProcessInfo.enable_privilege('SeDebugPrivilege')
     procs = psutil.process_iter()
     obOperInject = OperInject.OperInject()
     for proc in procs:
@@ -17,7 +19,8 @@ def test():
             p = psutil.Process(proc.pid)
             for dll in p.memory_maps():
                 try:
-                    print("\t{}: {}".format(dll.path, obOperInject.sys32HashTable[dll.path]))
+                    if dll.path[-3:] == 'dll':
+                        print("\t{}: {}".format(dll.path, obOperInject.sys32HashTable[dll.path]))
                 except:
                     print("\t[Error]\t{}".format(dll.path))
 
