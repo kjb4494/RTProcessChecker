@@ -14,9 +14,9 @@ def ProcessCheckerView(ProcessInfo, OperInject):
 
 
 def main():
-    obPInfo = ProcessInfo.ProcessInfo()
-    obPInfo.firstScanning()
     obOperInject = OperInject.OperInject()
+    obPInfo = ProcessInfo.ProcessInfo()
+    obPInfo.firstScanning(obOperInject)
 
     ProcessCheckerView(obPInfo, obOperInject)
 

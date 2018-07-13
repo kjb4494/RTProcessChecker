@@ -1,6 +1,7 @@
 import psutil
 import socket
 import hashlib
+import OperInject
 from ctypes import *
 from ctypes.wintypes import *
 
@@ -142,7 +143,7 @@ class ProcessInfo:
                 self.gsb = "??"
 
     # 모든 프로세스 최초 스캐닝
-    def firstScanning(self):
+    def firstScanning(self, OperInject):
         procs = psutil.process_iter()
         enable_privilege('SeDebugPrivilege')
         for proc in procs:
@@ -155,6 +156,10 @@ class ProcessInfo:
                 pHash = ""
                 pVt = ""
             pId = proc.pid
+            try:
+                OperInject.setFirstAppDllHash(pId)
+            except Exception as e:
+                print("몬가 일어났음... {}".format(e))
             pName = proc.name()
             try:
                 self.createProcess(pId)
