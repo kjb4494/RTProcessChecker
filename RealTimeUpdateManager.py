@@ -1,8 +1,6 @@
 import OperVt
 import ProcessInfo
 import OperWot
-import OperInject
-import time
 
 
 def importVt(Form):
@@ -37,12 +35,14 @@ def updateRTProcess(Form):
             if len(newPcList[newPid]['remote']) or len(befPcList[newPid]['remote']):
                 befPcList[newPid]['remote'] = newPcList[newPid]['remote']
             # inject 여부 검사
-            try:
-                injectCheck = Form.OperInject.isInjected(newPid)
-                Form.ProcessInfo.dic_processList[newPid]['inject'] = str(Form.OperInject.isInjected(newPid))
-            # AccessDenied pid --> pass
-            except:
-                pass
+            if Form.count >= 10:
+                try:
+                    injectCheck = Form.OperInject.isInjected(newPid)
+                    Form.ProcessInfo.dic_processList[newPid]['inject'] = str(Form.OperInject.isInjected(newPid))
+                # AccessDenied pid --> pass
+                except:
+                    pass
+
 
         # pid가 새로 생긴건 갱신
         else:
@@ -50,9 +50,8 @@ def updateRTProcess(Form):
             befPcList[newPid] = newPcList[newPid]
             try:
                 Form.OperInject.setFirstAppDllHash(newPid)
-                print(Form.OperInject.initDllHashTable)
             except Exception as e:
-                print("new --> {}".format(e))
+                print(e)
     # 죽은 프로세스는 삭제
     for befPid in befPcList:
         if befPid not in newPcList:
@@ -60,8 +59,11 @@ def updateRTProcess(Form):
     for i in delPidList:
         del befPcList[i]
         Form.OperInject.delDllInfo(i)
-        print(Form.OperInject.initDllHashTable)
     del obPcInfo  # 객체 FREE
+
+    if Form.count >= 10:
+        Form.count = 0
+    Form.count += 1
     Form.psFlag = False
 
 

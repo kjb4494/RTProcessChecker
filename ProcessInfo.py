@@ -1,7 +1,6 @@
 import psutil
 import socket
 import hashlib
-import OperInject
 from ctypes import *
 from ctypes.wintypes import *
 

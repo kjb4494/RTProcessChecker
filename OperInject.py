@@ -1,6 +1,5 @@
 import os
 import hashlib
-import ProcessInfo
 import psutil
 
 
@@ -58,11 +57,9 @@ class OperInject:
             try:
                 if dll.path[-3:].lower() == 'dll':
                     if dll.path not in self.sys32HashTable:
-                        print(dll.path)
                         fHash = self.operFileHash(dll.path)
                         fileDic[dll.path] = fHash
-            except Exception as e:
-                print("{}: {}".format(dll.path, e))
+            except:
                 continue
         self.initDllHashTable[pid] = fileDic
 
@@ -104,20 +101,3 @@ class OperInject:
             except:
                 continue
         return "OK"
-
-
-def test():
-    dicA = {'123': {'asdf': 'ghjk',
-                    'zxcv': 'bnm',
-                    'qwer': 'tyui',
-                    'uiop': 'aaaa'},
-            '124': {'asdf': 'ghjk'},
-            '125': {'asdf': 'ghjk'},
-            '126': {'asdf': 'ghjk'}}
-
-    if 'zxcv' in dicA['123']:
-        print(dicA['123']['zxcv'])
-
-
-if __name__ == "__main__":
-    test()

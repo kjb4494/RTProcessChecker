@@ -46,7 +46,7 @@ class Form(QWidget):
         self.setFixedHeight(600)
         self.tw = QTreeWidget(self)
         self.tic_gen = TicGenerator()
-        # self.count = 0
+        self.count = 0
         self.cloneDic = {}
 
         # Item 임시 저장 변수
