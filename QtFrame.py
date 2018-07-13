@@ -64,12 +64,11 @@ class Form(QWidget):
         self.vtFlag = False
         self.psFlag = False
         self.gsbFlag = False
-        self.injectFlag = False
 
     def init_widget(self, ProcessInfo, OperInject):
         # QTreeView 생성 및 설정
         self.ProcessInfo = ProcessInfo
-        self.obOperInject = OperInject
+        self.OperInject = OperInject
         self.tw.setFixedWidth(1000)
         self.tw.setFixedHeight(600)
         self.tw.setColumnCount(8)
@@ -107,12 +106,6 @@ class Form(QWidget):
             gsbThread = threading.Thread(target=rtum.updateGsb, args=(self,))
             gsbThread.daemon = True
             gsbThread.start()
-
-        if not self.injectFlag:
-            self.injectFlag = True
-            injectThread = threading.Thread(target=rtum.injectCheck, args=(self,))
-            injectThread.daemon = True
-            injectThread.start()
 
         # 리소스 동시참조를 막기 위한 리스트 복사
         if not self.psFlag:

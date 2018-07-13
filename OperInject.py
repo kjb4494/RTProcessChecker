@@ -43,11 +43,13 @@ class OperInject:
         p = psutil.Process(pid)
         for dll in p.memory_maps():
             try:
+                print(dll.path)
                 if dll.path[-3:].lower() == 'dll':
                     if dll.path not in self.sys32HashTable:
                         fHash = self.operFileHash(dll.path)
                         fileDic[dll.path] = fHash
-            except:
+            except Exception as e:
+                print(e)
                 continue
         self.initDllHashTable[pid] = fileDic
 

@@ -36,17 +36,29 @@ def updateRTProcess(Form):
             # IP, Port, Dns 정보를 비교하여 gsb 분석정보 초기화
             if len(newPcList[newPid]['remote']) or len(befPcList[newPid]['remote']):
                 befPcList[newPid]['remote'] = newPcList[newPid]['remote']
+            # inject 여부 검사
+            try:
+                Form.ProcessInfo.dic_processList[newPid]['inject'] = str(Form.OperInject.isInjected(newPid))
+            except Exception as e:
+                print("zz --> {}".format(e))
 
         # pid가 새로 생긴건 갱신
         else:
             Form.ProcessInfo.createProcess(newPid)
             befPcList[newPid] = newPcList[newPid]
+            try:
+                Form.OperInject.setFirstAppDllHash(newPid)
+                print(Form.OperInject.initDllHashTable)
+            except Exception as e:
+                print("new --> {}".format(e))
     # 죽은 프로세스는 삭제
     for befPid in befPcList:
         if befPid not in newPcList:
             delPidList.append(befPid)
     for i in delPidList:
         del befPcList[i]
+        Form.OperInject.delDllInfo(i)
+        print(Form.OperInject.initDllHashTable)
     del obPcInfo  # 객체 FREE
     Form.psFlag = False
 
@@ -67,8 +79,3 @@ def updateGsb(Form):
     finally:
         del obOperWot
         Form.gsbFlag = False
-
-def injectCheck(Form):
-    print("injectCheck 작동중")
-    time.sleep(5)
-    Form.injectFlag = False
