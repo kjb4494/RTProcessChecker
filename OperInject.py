@@ -6,12 +6,22 @@ import psutil
 
 class OperInject:
     def __init__(self):
+        self.ExceptedFile = ['C:\\Windows\\System32\\wow64.dll',
+                             'C:\\Windows\\System32\\wow64cpu.dll',
+                             'C:\\Windows\\System32\\wow64win.dll',
+                             'C:\\Windows\\System32\\UIRibbonRes.dll',
+                             'C:\\Windows\\System32\\RltkAPO64.dll']
+
         # system 폴더의 모든 DLL 데이터 해쉬를 저장한다.
         # key: 파일명, value: 해쉬값
         self.sys32HashTable = {}
         # 최초 응용프로그램의 DLL 데이터 해쉬를 저장한다.
         # key: pid, value: {key: 파일명, value: 해쉬값}
         self.initDllHashTable = {}
+
+        for fPath in self.ExceptedFile:
+            self.sys32HashTable[fPath] = ""
+
         print("System DLL File Hash Table 생성중...")
         for path in ['C:\Windows\System32', 'C:\Windows\SysWOW64']:
             for root, dirs, files in os.walk(path):
@@ -21,12 +31,15 @@ class OperInject:
                         try:
                             fHash = self.operFileHash(fPath)
                         except:
-                            continue
+                            self.ExceptedFile.append(fPath)
+                            fHash = ""
                         self.sys32HashTable[fPath] = fHash
         print("생성 완료!")
 
     # 파일의 해시를 계산
     def operFileHash(self, fPath):
+        if fPath in self.ExceptedFile:
+            return ''
         blocksize = 65536
         afile = open(fPath, 'rb')
         hasher = hashlib.md5()
@@ -43,21 +56,16 @@ class OperInject:
         p = psutil.Process(pid)
         for dll in p.memory_maps():
             try:
-                print(dll.path)
                 if dll.path[-3:].lower() == 'dll':
                     if dll.path not in self.sys32HashTable:
+                        print(dll.path)
                         fHash = self.operFileHash(dll.path)
                         fileDic[dll.path] = fHash
             except Exception as e:
-                print(e)
+                print("{}: {}".format(dll.path, e))
                 continue
         self.initDllHashTable[pid] = fileDic
 
-    # DLL 정보가 등록되어 있나?
-    def isExistAppDllHash(self, pid):
-        if pid in self.initDllHashTable:
-            return True
-        return False
 
     # PID가 죽으면 정보도 같이 소멸
     def delDllInfo(self, pid):
@@ -91,6 +99,7 @@ class OperInject:
                                 return 100
                         # 초기값과 다른 의심 파일이 있음
                         else:
+                            print("{}: {}".format(pid, dll.path))
                             return 50
             except:
                 continue

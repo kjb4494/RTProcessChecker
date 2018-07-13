@@ -156,10 +156,11 @@ class ProcessInfo:
                 pHash = ""
                 pVt = ""
             pId = proc.pid
+            # 최초 DLL 테이블 설정
             try:
                 OperInject.setFirstAppDllHash(pId)
             except Exception as e:
-                print("몬가 일어났음... {}".format(e))
+                pass
             pName = proc.name()
             try:
                 self.createProcess(pId)
