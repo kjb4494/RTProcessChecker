@@ -239,6 +239,7 @@ class ProcessInfo:
         self.dic_processList.update({pId: {'name': '',
                                            'path': '',
                                            'inject': '??',
+                                           'injectInfo': [],
                                            'vt': '',
                                            'vtInfo': {},
                                            'remote': [],

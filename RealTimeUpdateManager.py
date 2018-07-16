@@ -38,12 +38,11 @@ def updateRTProcess(Form):
             if Form.count >= 10:
                 try:
                     injectCheck = Form.OperInject.isInjected(newPid)
-                    Form.ProcessInfo.dic_processList[newPid]['inject'] = str(Form.OperInject.isInjected(newPid))
+                    Form.ProcessInfo.dic_processList[newPid]['inject'] = str(injectCheck[0])
+                    Form.ProcessInfo.dic_processList[newPid]['injectInfo'] = injectCheck[1]
                 # AccessDenied pid --> pass
                 except:
                     pass
-
-
         # pid가 새로 생긴건 갱신
         else:
             Form.ProcessInfo.createProcess(newPid)

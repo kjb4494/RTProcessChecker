@@ -73,6 +73,8 @@ class OperInject:
     # 100: 인젝션 파일, 50: 의심, 0: 정상
     def isInjected(self, pid):
         p = psutil.Process(pid)
+        result = "OK"
+        info = []
         for dll in p.memory_maps():
             try:
                 if dll.path[-3:].lower() == 'dll':
@@ -84,7 +86,8 @@ class OperInject:
                             continue
                         # 인젝션된 시스템 파일
                         else:
-                            return "INJECTED!"
+                            info.append(dll.path)
+                            result = "INJECTED!"
                     # 응용프로그램의 DLL 파일일 경우
                     else:
                         if dll.path in self.initDllHashTable[pid]:
@@ -93,11 +96,12 @@ class OperInject:
                                 continue
                             # 인젝션 DLL
                             else:
-                                return "INJECTED!"
+                                info.append(dll.path)
+                                result = "INJECTED!"
                         # 초기값과 다른 의심 파일이 있음
                         else:
-                            print("{}: {}".format(pid, dll.path))
-                            return "INJECTION DETECTED!"
+                            info.append(dll.path)
+                            result = "INJECTED!"
             except:
                 continue
-        return "OK"
+        return result, info
