@@ -11,6 +11,8 @@ import time
 import RealTimeUpdateManager as rtum
 import threading
 
+class OnClicked():
+    test = pyqtSignal()
 
 class TicGenerator(QThread):
     """
