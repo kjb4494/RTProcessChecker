@@ -37,7 +37,6 @@ class TicGenerator(QThread):
             self.Tic.emit()
             self.msleep(500)
 
-
 class Form(QWidget):
     def __init__(self):
         QWidget.__init__(self, flags=Qt.Widget)
@@ -59,6 +58,8 @@ class Form(QWidget):
         self.remoteIp = ""
         self.dns = ""
         self.path = ""
+        self.vtInfo = {}
+        self.injectInfo = []
 
         # 스레드 핸들링을 위한 플래그 변수
         self.vtFlag = False
@@ -74,6 +75,7 @@ class Form(QWidget):
         self.tw.setColumnCount(8)
         self.tw.setHeaderLabels(["Process Name", "PID", "Inject", "VT", "GSB", "Remote Port", "Remote IP", "DNS"])
         self.tw.setSortingEnabled(True)
+        self.tw.itemClicked.connect(self.get_item_info)
         self.tic_gen.Tic.connect(lambda: self.update_view())
         self.tic_gen.start()
 
@@ -87,7 +89,18 @@ class Form(QWidget):
         item.setText(5, self.remotePort)
         item.setText(6, self.remoteIp)
         item.setText(7, self.dns)
+        item.setData(11, 1, self.vtInfo)
+        item.setData(11, 2, self.injectInfo)
         return item
+
+    def get_item_info(self, item):
+        try:
+            print("=== Injected Info ===")
+            print("\n".join(item.data(11, 2)))
+            print("=== VirusTotal Report ===")
+            print("\n".join("{}: {}".format(vtInfo, item.data(11, 1)[vtInfo]) for vtInfo in item.data(11, 1)))
+        except:
+            return
 
     def update_view(self):
         self.tw.clear()
@@ -124,7 +137,9 @@ class Form(QWidget):
             self.pid = str(pid)
             self.pName = data['name']
             self.inject = data['inject']
+            self.injectInfo = data['injectInfo']
             self.vt = data['vt']
+            self.vtInfo = data['vtInfo']
             remoteData = data['remote']
             if len(remoteData):
                 for i in range(len(remoteData)):
