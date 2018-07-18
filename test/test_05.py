@@ -1,83 +1,64 @@
+# -*- coding: utf-8 -*-
+import utils, sys, struct
 from ctypes import *
-from ctypes.wintypes import *
-import sys
+from myPydbg.pydbg import *
+from myPydbg.hooking import *
 
 
-# const variable
-# Establish rights and basic options needed for all process declartion / iteration
-TH32CS_SNAPPROCESS = 2
-STANDARD_RIGHTS_REQUIRED = 0x000F0000
-SYNCHRONIZE = 0x00100000
-PROCESS_ALL_ACCESS = (STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0xFFF)
-TH32CS_SNAPMODULE = 0x00000008
-TH32CS_SNAPTHREAD = 0x00000004
+dbg = pydbg()
+isProcess = False
+processName = "notepad.exe"
 
-#class MODULEENTRY32(Structure):
-#    _fields_ = [ ( 'dwSize' , DWORD ) ,
-#                ( 'th32ModuleID' , DWORD ),
-#                ( 'th32ProcessID' , DWORD ),
-#                ( 'GlblcntUsage' , DWORD ),
-#                ( 'ProccntUsage' , DWORD ) ,
-#                ( 'modBaseAddr' , LONG ) ,
-#                ( 'modBaseSize' , DWORD ) ,
-#                ( 'hModule' , HMODULE ) ,
-#                ( 'szModule' , c_char * 256 ),
-#                ( 'szExePath' , c_char * 260 ) ]
+"""
+HMODULE WINAPI LoadLibrary(
+  _In_ LPCTSTR lpFileName
+);
+"""
 
 
-class MODULEENTRY32(Structure):
-    _fields_ = [ ( 'dwSize' , c_long ) ,
-                ( 'th32ModuleID' , c_long ),
-                ( 'th32ProcessID' , c_long ),
-                ( 'GlblcntUsage' , c_long ),
-                ( 'ProccntUsage' , c_long ) ,
-                ( 'modBaseAddr' , c_long ) ,
-                ( 'modBaseSize' , c_long ) ,
-                ( 'hModule' , c_void_p ) ,
-                ( 'szModule' , c_char * 256 ),
-                ( 'szExePath' , c_char * 260 ) ]
+def EntryHook(dbg, args):
+    if str(hex(hookAddress)).replace("L", "") == str(hex(dbg.context.Eax)).replace("L", ""):
+        print(str(hex(hookAddress)).replace("L", ""))
+        print(str(hex(dbg.context.Eax)).replace("L", ""))
+        dbg.debugger_active = False
+        print("루프 사라짐")
+
+    return
 
 
-CreateToolhelp32Snapshot= windll.kernel32.CreateToolhelp32Snapshot
-Process32First = windll.kernel32.Process32First
-Process32Next = windll.kernel32.Process32Next
-Module32First = windll.kernel32.Module32First
-Module32Next = windll.kernel32.Module32Next
-GetLastError = windll.kernel32.GetLastError
-OpenProcess = windll.kernel32.OpenProcess
-GetPriorityClass = windll.kernel32.GetPriorityClass
-CloseHandle = windll.kernel32.CloseHandle
+# """ for문을 이용하여 윈도우에서 실행되는 모든 프로세스 ID 리스트를 얻는다. """
+for (pid, name) in dbg.enumerate_processes():
+    print(name)
+    global hookAddress
+    if name.lower() == processName:
+        isProcess = True
+        hooks = hook_container()
 
+        # """ 프로세스 핸들값 & 주소값 얻기 """
+        dbg.attach(pid)
+        print("Saves a process handle in self.h_process of pid[%d]" % pid)
 
-try:
-    ProcessID=11216
-    hModuleSnap = DWORD
-    me32 = MODULEENTRY32()
-    me32.dwSize = sizeof( MODULEENTRY32 )
-    #me32.dwSize = 5000
-    hModuleSnap = CreateToolhelp32Snapshot( TH32CS_SNAPMODULE, ProcessID )
-    ret = Module32First( hModuleSnap, pointer(me32) )
-    if ret == 0 :
-        print('ListProcessModules() Error on Module32First[%d]' % GetLastError())
-        CloseHandle( hModuleSnap )
-    global PROGMainBase
-    PROGMainBase=False
-    while ret :
-        print("--------------------------------------------")
-        print(me32.dwSize)
-        print(me32.th32ModuleID)
-        print(me32.th32ProcessID)
-        print(me32.GlblcntUsage)
-        print(me32.ProccntUsage)
-        print(hex(me32.modBaseAddr))
-        print(me32.modBaseSize)
-        print(me32.hModule)
-        print(me32.szModule)
-        print(me32.szExePath)
-        ret = Module32Next( hModuleSnap , pointer(me32) )
-    CloseHandle( hModuleSnap )
+        target_dll = "kernel32.dll"
+        target_function = "BaseThreadInitThunk"
+        dll = windll.LoadLibrary(target_dll)
+        kernel32 = windll.LoadLibrary("kernel32.dll")
+        hookAddress = kernel32.GetProcAddress(dll._handle, b"BaseThreadInitThunk")
 
+        LL_hookAddress = dbg.func_resolve_debuggee("kernel32.dll", "LoadLibraryW")
 
+        # """ kernel32.dll의 WriteFile 함수에 중단점을 설정하고, 콜백함수 등록 """
+        if LL_hookAddress:
+            hooks.add(dbg, LL_hookAddress, 1, EntryHook, None)
+            print("LL_hookAddress : 0x%08x" % LL_hookAddress)
+            break
+        else:
+            print("[Error] : couldn't resolve hook address")
+            sys.exit(-1)
 
-except:
-    print("Error in ListProcessModules")
+if isProcess:
+    print("wating for occurring debugger event")
+    dbg.run()
+
+else:
+    print("[Error] : There in no process [%s]" % processName)
+    sys.exit(-1)
