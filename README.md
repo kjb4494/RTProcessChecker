@@ -14,7 +14,9 @@
     pip install requests
     pip install psutil
     pip install PyQt5
-    pip install pip install pyqt5-tools
+    pip install pyqt5-tools
+    pip install git+https://github.com/vuonghv/pydbg3.git
+    pip install git+https://github.com/Starwarsfan2099/PyDasm-3.5.git
 ### 5. 참고 자료
     1. 리버싱 핵심원리
     2. 점프 투 파이썬

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import utils, sys, struct
-from ctypes import *
 from myPydbg.pydbg import *
 from myPydbg.hooking import *
 
