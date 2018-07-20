@@ -83,6 +83,9 @@ class Form(QWidget):
         # SetSelected 를 출력하기 위한 플래그 변수
         self.ssFlag = False
 
+        # yScroll 값 유지하기 위한 변수
+        self.yScroll = False
+
     def init_widget(self, ProcessInfo, OperInject):
         # QTreeView 생성 및 설정
         self.ProcessInfo = ProcessInfo
@@ -131,6 +134,7 @@ class Form(QWidget):
             self.ttFlag = True
             self.ttData = "=== VirusTotal Report ===\n" + "\n".join("{}: {}".format(vtInfo, item.data(11, 1)[vtInfo]) for vtInfo in item.data(11, 1))
             self.clickedData = [item.data(11, 3), item.data(11, 4), item.data(11, 5), item.data(11, 6)]
+            print( self.clickedData)
 
             #self.clkFlag = True
 
@@ -139,8 +143,12 @@ class Form(QWidget):
 
     def update_view(self):
         # 화면 갱신
+        bar = self.tw.verticalScrollBar()
+        self.yScroll = bar.value()
         self.tw.clear()
-        
+        self.tw.scrollContentsBy(0, self.yScroll)
+
+        print(self.yScroll)
         if self.ttFlag:
             self.tw.setToolTip(self.ttData)
             self.ttFlag = False
@@ -195,9 +203,10 @@ class Form(QWidget):
                     if self.clickedData:
                         if self.pid == self.clickedData[0] and \
                                 self.remotePort == self.clickedData[1] and \
-                                self.remoteIp == self.clickedData[2] and \
-                                self.path == self.clickedData[3]:
+                                self.remoteIp == self.clickedData[2]:
                             self.ssFlag = True
+                            print(self.clickedData)
+
 
                     self.add_tree_root()
             else:
