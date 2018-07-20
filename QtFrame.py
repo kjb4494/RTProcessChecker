@@ -1,5 +1,5 @@
 
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import *
 from PyQt5.QtWidgets import QTreeWidget
 from PyQt5.QtCore import QVariant
 from PyQt5.QtWidgets import QTreeWidgetItem
@@ -85,7 +85,10 @@ class Form(QWidget):
         self.ssFlag = False
 
         # yScroll 값 유지하기 위한 변수
+        self.ysFlag = False
         self.yScroll = False
+        self.yScroll_diff = False
+        self.bar = self.tw.verticalScrollBar()
 
     def init_widget(self, ProcessInfo, OperInject):
         # QTreeView 생성 및 설정
@@ -93,26 +96,40 @@ class Form(QWidget):
         self.OperInject = OperInject
         self.tw.setFixedWidth(1000)
         self.tw.setFixedHeight(600)
-        self.tw.setColumnCount(9)
-        self.tw.setHeaderLabels(["*", "Process Name", "PID", "Inject", "VT", "GSB", "Remote Port", "Remote IP", "DNS"])
+        self.tw.setColumnCount(8)
+        self.tw.setColumnWidth(0, 150)
+        self.tw.setColumnWidth(1, 60)
+        self.tw.setColumnWidth(2, 60)
+        self.tw.setColumnWidth(3, 60)
+        self.tw.setColumnWidth(4, 60)
+        self.tw.setColumnWidth(6, 130)
+        self.tw.setHeaderLabels(["Process Name", "PID", "Inject", "VT", "GSB", "Remote Port", "Remote IP", "DNS"])
         self.tw.setSortingEnabled(True)
+
+        for i in range(0,8):
+            self.tw.headerItem().setTextAlignment(i, Qt.AlignHCenter)
+
         self.tw.itemClicked.connect(self.get_item_info)
         self.tic_gen.Tic.connect(lambda: self.update_view())
         self.tic_gen.start()
 
     def add_tree_root(self):
 
-        item = QTreeWidgetItem(self.tw)
-
+        item = QTreeWidgetItem(self.tw, [self.pName])
         item.setIcon(0, self.file_all)
-        item.setText(1, self.pName)
-        item.setText(2, self.pid)
-        item.setText(3, self.inject)
-        item.setText(4, self.vt)
-        item.setText(5, self.wot)
-        item.setText(6, self.remotePort)
-        item.setText(7, self.remoteIp)
-        item.setText(8, self.dns)
+        item.setText(1, self.pid)
+        item.setText(2, self.inject)
+        item.setText(3, self.vt)
+        item.setText(4, self.wot)
+        item.setText(5, self.remotePort)
+        item.setText(6, self.remoteIp)
+        item.setText(7, self.dns)
+
+        item.setTextAlignment(1, Qt.AlignRight)
+        item.setTextAlignment(2, Qt.AlignHCenter)
+        item.setTextAlignment(3, Qt.AlignHCenter)
+        item.setTextAlignment(4, Qt.AlignHCenter)
+        item.setTextAlignment(5, Qt.AlignHCenter)
 
         item.setData(11, 1, self.vtInfo)
         item.setData(11, 2, self.injectInfo)
@@ -121,6 +138,7 @@ class Form(QWidget):
         item.setData(11, 5, self.remoteIp)
         item.setData(11, 6, self.path)
         item.setData(11, 7, self.lport)
+
         if self.ssFlag == True:
             item.setSelected(True)
             self.ssFlag = False
@@ -136,20 +154,21 @@ class Form(QWidget):
             self.ttFlag = True
             self.ttData = "=== VirusTotal Report ===\n" + "\n".join("{}: {}".format(vtInfo, item.data(11, 1)[vtInfo]) for vtInfo in item.data(11, 1))
             self.clickedData = [item.data(11, 3), item.data(11, 4), item.data(11, 5), item.data(11, 6), item.data(11, 7)]
-
             #self.clkFlag = True
-
         except:
             return
 
     def update_view(self):
         # 화면 갱신
-        bar = self.tw.verticalScrollBar()
-        self.yScroll = bar.value()
-        self.tw.clear()
-        self.tw.scrollContentsBy(0, self.yScroll)
+        self.ysFlag = True
+        if self.ysFlag:
+            self.yScroll = self.bar.value()
+            self.tw.clear()
+            self.tw.scrollContentsBy(0, self.yScroll)
+            self.ysFlag = False
 
         print(self.yScroll)
+
         if self.ttFlag:
             self.tw.setToolTip(self.ttData)
             self.ttFlag = False
