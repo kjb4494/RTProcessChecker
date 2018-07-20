@@ -84,6 +84,9 @@ class Form(QWidget):
         # SetSelected 를 출력하기 위한 플래그 변수
         self.ssFlag = False
 
+        # yScroll 값 유지하기 위한 변수
+        self.yScroll = False
+
     def init_widget(self, ProcessInfo, OperInject):
         # QTreeView 생성 및 설정
         self.ProcessInfo = ProcessInfo
@@ -141,8 +144,12 @@ class Form(QWidget):
 
     def update_view(self):
         # 화면 갱신
+        bar = self.tw.verticalScrollBar()
+        self.yScroll = bar.value()
         self.tw.clear()
-        
+        self.tw.scrollContentsBy(0, self.yScroll)
+
+        print(self.yScroll)
         if self.ttFlag:
             self.tw.setToolTip(self.ttData)
             self.ttFlag = False
