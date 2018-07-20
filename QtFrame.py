@@ -68,6 +68,7 @@ class Form(QWidget):
         self.remoteIp = ""
         self.dns = ""
         self.path = ""
+        self.lport = ""
         self.vtInfo = {}
         self.injectInfo = []
 
@@ -116,6 +117,7 @@ class Form(QWidget):
         item.setData(11, 4, self.remotePort)
         item.setData(11, 5, self.remoteIp)
         item.setData(11, 6, self.path)
+        item.setData(11, 7, self.lport)
         if self.ssFlag == True:
             item.setSelected(True)
             self.ssFlag = False
@@ -130,7 +132,7 @@ class Form(QWidget):
             #self.tw.setToolTip("=== VirusTotal Report ===" + "\n".join("{}: {}".format(vtInfo, item.data(11, 1)[vtInfo]) for vtInfo in item.data(11, 1)))
             self.ttFlag = True
             self.ttData = "=== VirusTotal Report ===\n" + "\n".join("{}: {}".format(vtInfo, item.data(11, 1)[vtInfo]) for vtInfo in item.data(11, 1))
-            self.clickedData = [item.data(11, 3), item.data(11, 4), item.data(11, 5), item.data(11, 6)]
+            self.clickedData = [item.data(11, 3), item.data(11, 4), item.data(11, 5), item.data(11, 6), item.data(11, 7)]
 
             #self.clkFlag = True
 
@@ -190,13 +192,15 @@ class Form(QWidget):
                     self.remotePort = str(remoteData[i]['port'])
                     self.remoteIp = remoteData[i]['ip']
                     self.dns = remoteData[i]['dns']
+                    self.lport = str(remoteData[i]['lport'])
 
                     # 이전에 클릭한 데이터가 있을 경우 유지
                     if self.clickedData:
                         if self.pid == self.clickedData[0] and \
                                 self.remotePort == self.clickedData[1] and \
                                 self.remoteIp == self.clickedData[2] and \
-                                self.path == self.clickedData[3]:
+                                self.path == self.clickedData[3] and \
+                                self.lport == self.clickedData[4]:
                             self.ssFlag = True
 
                     self.add_tree_root()
@@ -205,6 +209,16 @@ class Form(QWidget):
                 self.remotePort = ""
                 self.remoteIp = ""
                 self.dns = ""
+                self.lport = ""
+
+                # 이전에 클릭한 데이터가 있을 경우 유지
+                if self.clickedData:
+                    if self.pid == self.clickedData[0] and \
+                            self.remotePort == self.clickedData[1] and \
+                            self.remoteIp == self.clickedData[2] and \
+                            self.path == self.clickedData[3] and \
+                            self.lport == self.clickedData[4]:
+                        self.ssFlag = True
                 self.add_tree_root()
 
 

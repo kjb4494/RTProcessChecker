@@ -52,7 +52,6 @@ class pdx(Exception):
         if win32_exception:
             self.error_msg = c_char_p()
             self.error_code = kernel32.GetLastError()
-
             kernel32.FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                                     None,
                                     self.error_code,

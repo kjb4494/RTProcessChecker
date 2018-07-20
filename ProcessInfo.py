@@ -173,6 +173,7 @@ class ProcessInfo:
                 for pconn in proc.connections('inet4'):
                     if len(pconn.raddr):
                         (ip, port) = pconn.raddr
+                        (lip, lport) = pconn.laddr
                         if not ip == "127.0.0.1":
                             if ip not in self.dnsCachTable:
                                 try:
@@ -187,7 +188,7 @@ class ProcessInfo:
                             else:
                                 self.dns = self.dnsCachTable[ip]
                                 self.setGsb()
-                            self.addPcRemoteInfo(pId, port, ip)
+                            self.addPcRemoteInfo(pId, port, ip, lport)
     '''
     모든 프로세스 스캐닝. FirstScanning과 다르게
     최초 ProcessInfo 객체의 gsbDatabase를 매개변수로 둔다.
@@ -218,6 +219,7 @@ class ProcessInfo:
                 for pconn in proc.connections('inet4'):
                     if len(pconn.raddr):
                         (ip, port) = pconn.raddr
+                        (lip, lport) = pconn.laddr
                         if not ip == "127.0.0.1":
                             if ip not in ProcessInfo.dnsCachTable:
                                 try:
@@ -232,7 +234,7 @@ class ProcessInfo:
                             else:
                                 self.dns = ProcessInfo.dnsCachTable[ip]
                                 self.setRefGsb(ProcessInfo)
-                            self.addPcRemoteInfo(pId, port, ip)
+                            self.addPcRemoteInfo(pId, port, ip, lport)
 
     # 해당 PID를 가진 프로세스의 정보를 담기 위한 딕셔너리 메모리 확보
     def createProcess(self, pId):
@@ -263,8 +265,8 @@ class ProcessInfo:
     def setPcWot(self, pid, pWot):
         pass
 
-    def addPcRemoteInfo(self, pid, pPort, pRAddIp):
-        self.dic_processList[pid]['remote'].append({'ip': pRAddIp, 'port': pPort, 'dns': self.dns, 'gsb': self.gsb})
+    def addPcRemoteInfo(self, pid, pPort, pRAddIp, pLport):
+        self.dic_processList[pid]['remote'].append({'ip': pRAddIp, 'port': pPort, 'dns': self.dns, 'gsb': self.gsb, 'lport': pLport})
 
     def setPcHash(self, pid, pHash):
         self.dic_processList[pid]['hash'] = pHash

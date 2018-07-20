@@ -9,7 +9,8 @@ class OperInject:
                              'C:\\Windows\\System32\\wow64cpu.dll',
                              'C:\\Windows\\System32\\wow64win.dll',
                              'C:\\Windows\\System32\\UIRibbonRes.dll',
-                             'C:\\Windows\\System32\\RltkAPO64.dll']
+                             'C:\\Windows\\System32\\RltkAPO64.dll',
+                             'C:\\Windows\\System32\\nvshext.dll']
 
         # system 폴더의 모든 DLL 데이터 해쉬를 저장한다.
         # key: 파일명, value: 해쉬값

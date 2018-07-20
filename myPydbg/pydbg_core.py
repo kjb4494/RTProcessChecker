@@ -134,6 +134,8 @@ class pydbg_core(object):
         print(advapi32.AdjustTokenPrivileges(h_token, 0, byref(token_state), 0, 0, 0))
         print("-----------------------")
 
+        advapi32.LookupPrivilegeValueA(0, "SeDebugPrivilege", byref(luid))
+        print("luid: {}".format(byref(luid)))
         if not advapi32.OpenProcessToken(current_process, TOKEN_ADJUST_PRIVILEGES, byref(h_token)):
             raise pdx("OpenProcessToken()", True)
 
@@ -142,7 +144,7 @@ class pydbg_core(object):
 
         token_state.PrivilegeCount = 1
         token_state.Privileges[0].Luid = luid
-        token_state.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+        token_state.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED
 
         if not advapi32.AdjustTokenPrivileges(h_token, 0, byref(token_state), 0, 0, 0):
             raise pdx("AdjustTokenPrivileges()", True)
