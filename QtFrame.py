@@ -1,4 +1,3 @@
-
 from PyQt5.QtWidgets import *
 from PyQt5.QtWidgets import QTreeWidget
 from PyQt5.QtCore import QVariant
@@ -7,10 +6,11 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
+from PyQt5 import QtGui
 import time
 import RealTimeUpdateManager as rtum
 import threading
-from PyQt5.QtGui import *
+
 
 class TicGenerator(QThread):
     """
@@ -37,9 +37,8 @@ class TicGenerator(QThread):
             self.Tic.emit()
             self.msleep(500)
 
+
 class Form(QWidget):
-
-
     def __init__(self):
 
         QWidget.__init__(self, flags=Qt.Widget)
@@ -53,10 +52,9 @@ class Form(QWidget):
         self.cloneDic = {}
         self.clickedData = []
 
-        #icon
+        # icon
         style = QApplication.style()
         self.file_all = style.standardIcon(QStyle.SP_FileIcon)
-
 
         # Item 임시 저장 변수
         self.pName = ""
@@ -76,19 +74,13 @@ class Form(QWidget):
         self.vtFlag = False
         self.psFlag = False
         self.gsbFlag = False
-        
+
         # Tooltip 을 출력하기 위한 플래그 변수
         self.ttFlag = False
         self.ttData = ""
 
         # SetSelected 를 출력하기 위한 플래그 변수
         self.ssFlag = False
-
-        # yScroll 값 유지하기 위한 변수
-        self.ysFlag = False
-        self.yScroll = False
-        self.yScroll_diff = False
-        self.bar = self.tw.verticalScrollBar()
 
     def init_widget(self, ProcessInfo, OperInject):
         # QTreeView 생성 및 설정
@@ -106,7 +98,7 @@ class Form(QWidget):
         self.tw.setHeaderLabels(["Process Name", "PID", "Inject", "VT", "GSB", "Remote Port", "Remote IP", "DNS"])
         self.tw.setSortingEnabled(True)
 
-        for i in range(0,8):
+        for i in range(0, 8):
             self.tw.headerItem().setTextAlignment(i, Qt.AlignHCenter)
 
         self.tw.itemClicked.connect(self.get_item_info)
@@ -140,44 +132,45 @@ class Form(QWidget):
         item.setData(11, 7, self.lport)
 
         if self.ssFlag == True:
-            item.setSelected(True)
+            # item.setSelected(True)
+            self.selectedItemColorChange(item)
             self.ssFlag = False
+
+    def selectedItemColorChange(self, item):
+        for i in range(8):
+            item.setBackground(i, QtGui.QColor(Qt.lightGray))
 
     def get_item_info(self, item):
         try:
-            #print("=== Injected Info ===")
-            #print("\n".join(item.data(11, 2)))
-            #print("=== VirusTotal Report ===")
-            #print("\n".join("{}: {}".format(vtInfo, item.data(11, 1)[vtInfo]) for vtInfo in item.data(11, 1)))
-            #print(item.data(11, 1))
-            #self.tw.setToolTip("=== VirusTotal Report ===" + "\n".join("{}: {}".format(vtInfo, item.data(11, 1)[vtInfo]) for vtInfo in item.data(11, 1)))
             self.ttFlag = True
-            self.ttData = "=== VirusTotal Report ===\n" + "\n".join("{}: {}".format(vtInfo, item.data(11, 1)[vtInfo]) for vtInfo in item.data(11, 1))
-            self.clickedData = [item.data(11, 3), item.data(11, 4), item.data(11, 5), item.data(11, 6), item.data(11, 7)]
-            #self.clkFlag = True
+            self.ttData = ""
+            self.ttData += "=== Injected Info ===\n"
+            self.ttData += "\n".join(item.data(11, 2))
+            self.ttData += "\n"
+            self.ttData += "=== VirusTotal Report ===\n"
+            count = 0
+            for vtInfo, data in item.data(11, 1).items():
+                self.ttData += "{}: {}\t\t".format(vtInfo, data)
+                count += 1
+                if count % 4 == 0:
+                    self.ttData += "\n"
+            self.clickedData = [item.data(11, 3), item.data(11, 4),
+                                item.data(11, 5), item.data(11, 6), item.data(11, 7)]
         except:
             return
 
     def update_view(self):
         # 화면 갱신
-        self.ysFlag = True
-        if self.ysFlag:
-            self.yScroll = self.bar.value()
-            self.tw.clear()
-            self.tw.scrollContentsBy(0, self.yScroll)
-            self.ysFlag = False
-
-        print(self.yScroll)
+        self.tw.clear()
 
         if self.ttFlag:
             self.tw.setToolTip(self.ttData)
             self.ttFlag = False
-        # self.count = self.count + 1
-        # self.setWindowTitle("Progress Checker:{}".format(self.count))
+
         # vt를 실시간으로 갱신하는 스레드
         if not self.vtFlag:
             self.vtFlag = True
-            vtThread = threading.Thread(target=rtum.importVt, args=(self, ))
+            vtThread = threading.Thread(target=rtum.importVt, args=(self,))
             vtThread.daemon = True
             vtThread.start()
 
@@ -246,7 +239,3 @@ class Form(QWidget):
                             self.lport == self.clickedData[4]:
                         self.ssFlag = True
                 self.add_tree_root()
-
-
-
-
