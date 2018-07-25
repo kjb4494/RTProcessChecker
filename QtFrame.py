@@ -81,6 +81,8 @@ class Form(QWidget):
 
         # SetSelected 를 출력하기 위한 플래그 변수
         self.ssFlag = False
+        self.tmpitem = None
+        self.oldBg = None
 
     def init_widget(self, ProcessInfo, OperInject):
         # QTreeView 생성 및 설정
@@ -106,7 +108,14 @@ class Form(QWidget):
         self.tic_gen.start()
 
     def add_tree_root(self):
-
+        # 이전에 클릭한 데이터가 있을 경우 유지
+        if self.clickedData:
+            if self.pid == self.clickedData[0] and \
+                    self.remotePort == self.clickedData[1] and \
+                    self.remoteIp == self.clickedData[2] and \
+                    self.path == self.clickedData[3] and \
+                    self.lport == self.clickedData[4]:
+                self.ssFlag = True
         item = QTreeWidgetItem(self.tw, [self.pName])
         item.setIcon(0, self.file_all)
         item.setText(1, self.pid)
@@ -134,11 +143,17 @@ class Form(QWidget):
         if self.ssFlag == True:
             # item.setSelected(True)
             self.selectedItemColorChange(item)
+            self.tmpitem = item
+            self.oldBg = item.background(0)
             self.ssFlag = False
 
     def selectedItemColorChange(self, item):
         for i in range(8):
             item.setBackground(i, QtGui.QColor(200, 230, 255))
+
+    def setOldBgColor(self):
+        for i in range(8):
+            self.tmpitem.setBackground(i, QtGui.QColor(250, 250, 250))
 
     def get_item_info(self, item):
         try:
@@ -158,6 +173,10 @@ class Form(QWidget):
                                 item.data(11, 5), item.data(11, 6), item.data(11, 7)]
         except:
             return
+        try:
+            self.setOldBgColor()
+        except:
+            print("윽액...")
 
     def update_view(self):
         # 화면 갱신
@@ -212,16 +231,6 @@ class Form(QWidget):
                     self.remoteIp = remoteData[i]['ip']
                     self.dns = remoteData[i]['dns']
                     self.lport = str(remoteData[i]['lport'])
-
-                    # 이전에 클릭한 데이터가 있을 경우 유지
-                    if self.clickedData:
-                        if self.pid == self.clickedData[0] and \
-                                self.remotePort == self.clickedData[1] and \
-                                self.remoteIp == self.clickedData[2] and \
-                                self.path == self.clickedData[3] and \
-                                self.lport == self.clickedData[4]:
-                            self.ssFlag = True
-
                     self.add_tree_root()
             else:
                 self.wot = ""
@@ -229,13 +238,4 @@ class Form(QWidget):
                 self.remoteIp = ""
                 self.dns = ""
                 self.lport = ""
-
-                # 이전에 클릭한 데이터가 있을 경우 유지
-                if self.clickedData:
-                    if self.pid == self.clickedData[0] and \
-                            self.remotePort == self.clickedData[1] and \
-                            self.remoteIp == self.clickedData[2] and \
-                            self.path == self.clickedData[3] and \
-                            self.lport == self.clickedData[4]:
-                        self.ssFlag = True
                 self.add_tree_root()
