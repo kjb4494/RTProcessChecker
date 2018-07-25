@@ -35,7 +35,7 @@ class TicGenerator(QThread):
                 self.usleep(1)
                 continue
             self.Tic.emit()
-            self.msleep(500)
+            self.msleep(400)
 
 
 class Form(QWidget):
@@ -74,6 +74,7 @@ class Form(QWidget):
         self.vtFlag = False
         self.psFlag = False
         self.gsbFlag = False
+        self.dnsFlag = False
 
         # Tooltip 을 출력하기 위한 플래그 변수
         self.ttFlag = False
@@ -199,6 +200,13 @@ class Form(QWidget):
             gsbThread = threading.Thread(target=rtum.updateGsb, args=(self,))
             gsbThread.daemon = True
             gsbThread.start()
+
+        # dns 정보를 실시간으로 갱신해주는 스레드
+        if not self.dnsFlag:
+            self.dnsFlag = True
+            dnsThread = threading.Thread(target=rtum.updateDnsInfo, args=(self,))
+            dnsThread.daemon = True
+            dnsThread.start()
 
         # 리소스 동시참조를 막기 위한 리스트 복사
         if not self.psFlag:

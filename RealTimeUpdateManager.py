@@ -1,6 +1,7 @@
 import OperVt
 import ProcessInfo
 import OperWot
+import socket
 
 
 def importVt(Form):
@@ -78,7 +79,22 @@ def updateGsb(Form):
                 Form.ProcessInfo.gsbDataBase[dns] = '0'
     except Exception as e:
         print(e)
-        return
     finally:
         del obOperWot
         Form.gsbFlag = False
+
+
+def updateDnsInfo(Form):
+    try:
+        for ip, dns in Form.ProcessInfo.dnsCachTable.items():
+            if dns == "??":
+                try:
+                    print("search: {}".format(ip))
+                    Form.ProcessInfo.dnsCachTable[ip] = socket.gethostbyaddr(ip)[0]
+                except:
+                    Form.ProcessInfo.dnsCachTable[ip] = ip
+    except Exception as e:
+        print("New Exception --> {}".format(e))
+    finally:
+        print("플래그 초기화")
+        Form.dnsFlag = False

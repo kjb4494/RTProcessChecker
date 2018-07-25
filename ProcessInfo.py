@@ -176,18 +176,25 @@ class ProcessInfo:
                         (lip, lport) = pconn.laddr
                         if not ip == "127.0.0.1":
                             if ip not in self.dnsCachTable:
-                                try:
-                                    self.dns = socket.gethostbyaddr(ip)[0]
-                                except:
-                                    self.dns = "Unknown"
-                                    self.dnsCachTable[ip] = self.dns
-                                    self.gsb = "-"
-                                else:
-                                    self.dnsCachTable[ip] = self.dns
-                                    self.setGsb()
+                                self.dnsCachTable[ip] = "??"
+                                self.gsb = "??"
+                                self.dns = "??"
+                                # try:
+                                #     self.dns = socket.gethostbyaddr(ip)[0]
+                                # except:
+                                #     self.dns = "Unknown"
+                                #     self.dnsCachTable[ip] = self.dns
+                                #     self.gsb = "-"
+                                # else:
+                                #     self.dnsCachTable[ip] = self.dns
+                                #     self.setGsb()
                             else:
-                                self.dns = self.dnsCachTable[ip]
-                                self.setGsb()
+                                if self.dnsCachTable[ip] == "??":
+                                    self.dns = "??"
+                                    self.gsb = "??"
+                                else:
+                                    self.dns = self.dnsCachTable[ip]
+                                    self.setGsb()
                             self.addPcRemoteInfo(pId, port, ip, lport)
     '''
     모든 프로세스 스캐닝. FirstScanning과 다르게
@@ -222,18 +229,25 @@ class ProcessInfo:
                         (lip, lport) = pconn.laddr
                         if not ip == "127.0.0.1":
                             if ip not in ProcessInfo.dnsCachTable:
-                                try:
-                                    self.dns = socket.gethostbyaddr(ip)[0]
-                                except:
-                                    self.dns = "Unknown"
-                                    ProcessInfo.dnsCachTable[ip] = self.dns
-                                    self.gsb = "-"
-                                else:
-                                    ProcessInfo.dnsCachTable[ip] = self.dns
-                                    self.setRefGsb(ProcessInfo)
+                                ProcessInfo.dnsCachTable[ip] = "??"
+                                self.dns = "??"
+                                self.gsb = "??"
+                                # try:
+                                #     self.dns = socket.gethostbyaddr(ip)[0]
+                                # except:
+                                #     self.dns = "Unknown"
+                                #     ProcessInfo.dnsCachTable[ip] = self.dns
+                                #     self.gsb = "-"
+                                # else:
+                                #     ProcessInfo.dnsCachTable[ip] = self.dns
+                                #     self.setRefGsb(ProcessInfo)
                             else:
-                                self.dns = ProcessInfo.dnsCachTable[ip]
-                                self.setRefGsb(ProcessInfo)
+                                if ProcessInfo.dnsCachTable[ip] == "??":
+                                    self.dns = "??"
+                                    self.gsb = "??"
+                                else:
+                                    self.dns = ProcessInfo.dnsCachTable[ip]
+                                    self.setRefGsb(ProcessInfo)
                             self.addPcRemoteInfo(pId, port, ip, lport)
 
     # 해당 PID를 가진 프로세스의 정보를 담기 위한 딕셔너리 메모리 확보
