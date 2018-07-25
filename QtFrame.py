@@ -138,7 +138,7 @@ class Form(QWidget):
 
     def selectedItemColorChange(self, item):
         for i in range(8):
-            item.setBackground(i, QtGui.QColor(Qt.lightGray))
+            item.setBackground(i, QtGui.QColor(200, 230, 255))
 
     def get_item_info(self, item):
         try:
