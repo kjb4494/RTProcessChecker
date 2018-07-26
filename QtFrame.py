@@ -158,18 +158,22 @@ class Form(QWidget):
 
     def get_item_info(self, item):
         try:
+            tmpString = ""
+            count = 0
             self.ttFlag = True
             self.ttData = ""
             self.ttData += "=== Injected Info ===\n"
             self.ttData += "\n".join(item.data(11, 2))
             self.ttData += "\n"
             self.ttData += "=== VirusTotal Report ===\n"
-            count = 0
             for vtInfo, data in item.data(11, 1).items():
-                self.ttData += "{}: {}\t\t".format(vtInfo, data)
-                count += 1
-                if count % 4 == 0:
-                    self.ttData += "\n"
+                if data is not None:
+                    count += 1
+                    tmpString += "  {}. {}: {}\n".format(count, vtInfo, data)
+            lenKeys = len(item.data(11, 1).keys())
+            self.ttData += "바이러스 검사 소프트웨어 탐지 비율: {} / {}\n".format(count, lenKeys)
+            self.ttData += tmpString
+
             self.clickedData = [item.data(11, 3), item.data(11, 4),
                                 item.data(11, 5), item.data(11, 6), item.data(11, 7)]
         except:
@@ -177,7 +181,7 @@ class Form(QWidget):
         try:
             self.setOldBgColor()
         except:
-            print("윽액...")
+            pass
 
     def update_view(self):
         # 화면 갱신

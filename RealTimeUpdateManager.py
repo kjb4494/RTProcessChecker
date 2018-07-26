@@ -71,7 +71,7 @@ def updateGsb(Form):
     obOperWot = OperWot.OperWot()
     try:
         for dns, value in Form.ProcessInfo.gsbDataBase.items():
-            if value != '-1':
+            if value != '-1' or dns == "??":
                 continue
             if obOperWot.isMalwareUrl(dns):
                 Form.ProcessInfo.gsbDataBase[dns] = '1'
@@ -89,12 +89,10 @@ def updateDnsInfo(Form):
         for ip, dns in Form.ProcessInfo.dnsCachTable.items():
             if dns == "??":
                 try:
-                    print("search: {}".format(ip))
                     Form.ProcessInfo.dnsCachTable[ip] = socket.gethostbyaddr(ip)[0]
                 except:
                     Form.ProcessInfo.dnsCachTable[ip] = ip
     except Exception as e:
-        print("New Exception --> {}".format(e))
+        pass
     finally:
-        print("플래그 초기화")
         Form.dnsFlag = False

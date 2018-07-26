@@ -5,6 +5,7 @@ import psutil
 
 class OperInject:
     def __init__(self):
+        # 접근이 안 되는 System File들
         self.ExceptedFile = ['C:\\Windows\\System32\\wow64.dll',
                              'C:\\Windows\\System32\\wow64cpu.dll',
                              'C:\\Windows\\System32\\wow64win.dll',
@@ -71,7 +72,6 @@ class OperInject:
             del self.initDllHashTable[pid]
 
     # PID의 DLL 인젝션 여부
-    # 100: 인젝션 파일, 50: 의심, 0: 정상
     def isInjected(self, pid):
         p = psutil.Process(pid)
         result = "OK"
@@ -82,23 +82,25 @@ class OperInject:
                     # 시스템 파일일 경우
                     # 시스템 해시 테이블에 존재하지않으면 except로 넘어간다.
                     if dll.path in self.sys32HashTable:
-                        # 정상 시스템 파일
-                        if self.sys32HashTable[dll.path] == self.operFileHash(dll.path):
-                            continue
-                        # 인젝션된 시스템 파일
-                        else:
-                            info.append(dll.path)
-                            result = "INJECTED!"
+                        # # 정상 시스템 파일
+                        # if self.sys32HashTable[dll.path] == self.operFileHash(dll.path):
+                        #     continue
+                        # # 인젝션된 시스템 파일
+                        # else:
+                        #     info.append(dll.path)
+                        #     result = "INJECTED!"
+                        continue
                     # 응용프로그램의 DLL 파일일 경우
                     else:
                         if dll.path in self.initDllHashTable[pid]:
-                            # 정상 DLL
-                            if self.initDllHashTable[pid][dll.path] == self.operFileHash(dll.path):
-                                continue
-                            # 인젝션 DLL
-                            else:
-                                info.append(dll.path)
-                                result = "INJECTED!"
+                            # # 정상 DLL
+                            # if self.initDllHashTable[pid][dll.path] == self.operFileHash(dll.path):
+                            #     continue
+                            # # 인젝션 DLL
+                            # else:
+                            #     info.append(dll.path)
+                            #     result = "INJECTED!"
+                            continue
                         # 초기값과 다른 의심 파일이 있음
                         else:
                             info.append(dll.path)
