@@ -1,8 +1,4 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtWidgets import QTreeWidget
-from PyQt5.QtCore import QVariant
-from PyQt5.QtWidgets import QTreeWidgetItem
-from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
@@ -10,6 +6,12 @@ from PyQt5 import QtGui
 import time
 import RealTimeUpdateManager as rtum
 import threading
+
+import win32ui
+import win32gui
+import win32con
+import win32api
+import os
 
 
 class TicGenerator(QThread):
@@ -85,6 +87,9 @@ class Form(QWidget):
         self.tmpitem = None
         self.oldBg = None
 
+        # 아이콘 저장이 불가능한 프로세스명을 모아둔 리스트
+        self.canNotSaveList = []
+
     def init_widget(self, ProcessInfo, OperInject):
         # QTreeView 생성 및 설정
         self.ProcessInfo = ProcessInfo
@@ -108,6 +113,42 @@ class Form(QWidget):
         self.tic_gen.Tic.connect(lambda: self.update_view())
         self.tic_gen.start()
 
+    # 프로세스 실행 파일의 아이콘을 BMP파일로 추출한다.
+    def extract_icon(self):
+        ico_x = win32api.GetSystemMetrics(win32con.SM_CXICON)
+
+        large, small = win32gui.ExtractIconEx(self.path, 0)
+        win32gui.DestroyIcon(small[0])
+
+        hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
+        hbmp = win32ui.CreateBitmap()
+        hbmp.CreateCompatibleBitmap(hdc, ico_x, ico_x)
+        hdc = hdc.CreateCompatibleDC()
+
+        hdc.SelectObject(hbmp)
+        hdc.DrawIcon((0, 0), large[0])
+
+        hbmp.SaveBitmapFile(hdc, 'icons/' + self.pName + '.bmp')
+
+        del hdc
+        del hbmp
+
+    def set_icon(self, item):
+        # icon path에 아이콘이 존재하지 않을 경우
+        if not os.path.exists('icons/' + self.pName + '.bmp'):
+            if not self.pName in self.canNotSaveList:
+                try:
+                    self.extract_icon()
+                    item.setIcon(0, QtGui.QIcon('icons/' + self.pName + '.bmp'))
+                except:
+                    self.canNotSaveList.append(self.pName)
+                    item.setIcon(0, self.file_all)
+            else:
+                item.setIcon(0, self.file_all)
+        # icon path에 아이콘이 존재할 경우
+        else:
+            item.setIcon(0, QtGui.QIcon('icons/' + self.pName + '.bmp'))
+
     def add_tree_root(self):
         # 이전에 클릭한 데이터가 있을 경우 유지
         if self.clickedData:
@@ -118,7 +159,9 @@ class Form(QWidget):
                     self.lport == self.clickedData[4]:
                 self.ssFlag = True
         item = QTreeWidgetItem(self.tw, [self.pName])
-        item.setIcon(0, self.file_all)
+        
+        # 아이콘 추출 및 적용
+        self.set_icon(item)
         item.setText(1, self.pid)
         item.setText(2, self.inject)
         item.setText(3, self.vt)

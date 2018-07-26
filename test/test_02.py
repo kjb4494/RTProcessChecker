@@ -1,52 +1,20 @@
-# 코드 테스트를 위한 공간입니다.
+import win32ui
+import win32gui
+import win32con
+import win32api
 
-# !/usr/bin/python3
-# -*- coding: utf-8 -*-
+ico_x = win32api.GetSystemMetrics(win32con.SM_CXICON)
+ico_y = win32api.GetSystemMetrics(win32con.SM_CYICON)
 
-"""
-ZetCode PyQt5 tutorial
+large, small = win32gui.ExtractIconEx("C:\\Program Files\\FileZilla FTP Client\\filezilla.exe", 0)
+win32gui.DestroyIcon(small[0])
 
-In this example, we determine the event sender
-object.
+hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
+hbmp = win32ui.CreateBitmap()
+hbmp.CreateCompatibleBitmap(hdc, ico_x, ico_x)
+hdc = hdc.CreateCompatibleDC()
 
-Author: Jan Bodnar
-Website: zetcode.com
-Last edited: August 2017
-"""
+hdc.SelectObject(hbmp)
+hdc.DrawIcon((0, 0), large[0])
 
-import sys
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QApplication
-
-
-class Example(QMainWindow):
-
-    def __init__(self):
-        super().__init__()
-
-        self.initUI()
-
-    def initUI(self):
-        btn1 = QPushButton("Button 1", self)
-        btn1.move(30, 50)
-
-        btn2 = QPushButton("Button 2", self)
-        btn2.move(150, 50)
-
-        btn1.clicked.connect(self.buttonClicked)
-        btn2.clicked.connect(self.buttonClicked)
-
-        self.statusBar()
-
-        self.setGeometry(300, 300, 290, 150)
-        self.setWindowTitle('Event sender')
-        self.show()
-
-    def buttonClicked(self):
-        sender = self.sender()
-        self.statusBar().showMessage(sender.text() + ' was pressed')
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = Example()
-    sys.exit(app.exec_())
+hbmp.SaveBitmapFile(hdc, 'icon.bmp')
